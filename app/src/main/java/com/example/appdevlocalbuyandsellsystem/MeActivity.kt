@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MeActivity : AppCompatActivity() {
 
@@ -37,7 +36,7 @@ class MeActivity : AppCompatActivity() {
 
         // Upload Product Logic
         findViewById<CardView>(R.id.btnUploadProduct).setOnClickListener {
-            // Placeholder for Upload Action
+            startActivity(Intent(this, UploadProductActivity::class.java))
         }
 
         // Logout Logic
@@ -47,8 +46,6 @@ class MeActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-
-
 
         // Navigation bar logic
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {

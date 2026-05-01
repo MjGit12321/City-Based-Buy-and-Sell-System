@@ -31,4 +31,20 @@
     <string name="upload_product">Upload your product</string>
     <string name="my_products">Your uploaded products</string>
     <string name="logout">Logout</string>
+    <string name="sell_a_product">Sell a product!</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="product_name_label">Product Name:</string>
+    <string name="product_description_label">Product Description:</string>
+    <string name="price_label">Price:</string>
+    <string name="location_label">Location:</string>
+    <string name="barangay_label">Barangay</string>
+    <string name="city_municipality_label">City or Municipality</string>
+    <string name="province_label">Province</string>
+    <string name="upload">Upload</string>
+    <string name="search_hint">Search...</string>
+    <string name="product_image_desc">Product Image</string>
+    <string name="seller_profile_desc">Seller Profile</string>
+    <string name="add_product_desc">Add product</string>
+    <string name="message_seller_desc">Message seller</string>
+    <string name="product_description_title">Product Description:</string>
 </resources>

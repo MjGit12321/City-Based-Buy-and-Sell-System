@@ -1,5 +1,7 @@
 package com.example.appdevlocalbuyandsellsystem
 
+import java.io.Serializable
+
 /**
  * Data model for a Product.
  * Holds information about price, name, and description.
@@ -11,4 +13,4 @@ data class Product(
     val username: String = "User123",
     val rating: Float = 0.0f,
     var isFavorite: Boolean = false
-)
+) : Serializable

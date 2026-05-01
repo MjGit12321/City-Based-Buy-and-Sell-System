@@ -45,6 +45,13 @@
         <activity
             android:name=".InboxActivity"
             android:exported="false" />
+        <activity
+            android:name=".UploadProductActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ProductDetailsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

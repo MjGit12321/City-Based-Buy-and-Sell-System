@@ -50,6 +50,14 @@ class ProductAdapter(private val productList: List<Product>) :
             product.isFavorite = !product.isFavorite
             notifyItemChanged(position)
         }
+
+        // Navigate to Product Details on item click
+        holder.itemView.setOnClickListener {
+            val context = holder.itemView.context
+            val intent = android.content.Intent(context, ProductDetailsActivity::class.java)
+            intent.putExtra("PRODUCT_DATA", product)
+            context.startActivity(intent)
+        }
     }
 
     override fun getItemCount(): Int = productList.size
