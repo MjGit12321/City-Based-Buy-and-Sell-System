@@ -1,0 +1,39 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Group of scattered outlined diamonds -->
+    <path
+        android:strokeColor="#66FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M150,20 L170,40 L150,60 L130,40 Z" />
+    <path
+        android:strokeColor="#66FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M180,50 L200,70 L180,90 L160,70 Z" />
+    <path
+        android:strokeColor="#66FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M140,80 L160,100 L140,120 L120,100 Z" />
+    <path
+        android:strokeColor="#66FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M170,110 L190,130 L170,150 L150,130 Z" />
+    <path
+        android:strokeColor="#66FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M130,140 L150,160 L130,180 L110,160 Z" />
+    <path
+        android:strokeColor="#44FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M110,40 L130,60 L110,80 L90,60 Z" />
+    <path
+        android:strokeColor="#44FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M100,100 L120,120 L100,140 L80,120 Z" />
+    <path
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M60,140 L80,160 L60,180 L40,160 Z" />
+</vector>
