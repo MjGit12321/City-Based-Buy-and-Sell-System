@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
  * Adapter for the Product list.
  * Binds Product data to the item_product layout.
  */
-class ProductAdapter(private val productList: List<Product>) :
-    RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+class ProductAdapter(
+    private val productList: List<Product>,
+    private val onItemClick: ((Product) -> Unit)? = null
+) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvPrice: TextView = itemView.findViewById(R.id.tvProductPrice)
@@ -51,12 +53,17 @@ class ProductAdapter(private val productList: List<Product>) :
             notifyItemChanged(position)
         }
 
-        // Navigate to Product Details on item click
+        // Click Logic
         holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = android.content.Intent(context, ProductDetailsActivity::class.java)
-            intent.putExtra("PRODUCT_DATA", product)
-            context.startActivity(intent)
+            if (onItemClick != null) {
+                onItemClick.invoke(product)
+            } else {
+                // Default navigation to generic ProductDetailsActivity
+                val context = holder.itemView.context
+                val intent = android.content.Intent(context, ProductDetailsActivity::class.java)
+                intent.putExtra("PRODUCT_DATA", product)
+                context.startActivity(intent)
+            }
         }
     }
 

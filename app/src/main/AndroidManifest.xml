@@ -52,6 +52,22 @@
         <activity
             android:name=".ProductDetailsActivity"
             android:exported="false" />
+        <activity
+            android:name=".CallingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ViewOtherUserProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MyProductsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MyProductDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

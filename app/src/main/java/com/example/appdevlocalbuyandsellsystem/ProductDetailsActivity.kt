@@ -49,6 +49,11 @@ class ProductDetailsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // Navigate to Seller Profile
+        findViewById<android.view.View>(R.id.sellerSection).setOnClickListener {
+            startActivity(Intent(this, ViewOtherUserProfileActivity::class.java))
+        }
+
         // Navigation Bar Logic
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainpageActivity::class.java)

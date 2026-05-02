@@ -26,12 +26,12 @@ class MeActivity : AppCompatActivity() {
 
         // Edit Profile Logic
         findViewById<CardView>(R.id.btnEditProfile).setOnClickListener {
-            // Placeholder for Edit Profile Action
+            startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
         // My Products Logic
         findViewById<CardView>(R.id.btnMyProducts).setOnClickListener {
-            // Placeholder for My Products Action
+            startActivity(Intent(this, MyProductsActivity::class.java))
         }
 
         // Upload Product Logic

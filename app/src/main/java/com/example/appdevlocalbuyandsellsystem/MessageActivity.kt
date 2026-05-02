@@ -33,6 +33,10 @@ class MessageActivity : AppCompatActivity() {
             finish()
         }
 
+        findViewById<ImageView>(R.id.ivCall).setOnClickListener {
+            startActivity(Intent(this, CallingActivity::class.java))
+        }
+
         // Setup RecyclerView
         val rvChat = findViewById<RecyclerView>(R.id.rvChat)
         val userName = intent.getStringExtra("USER_NAME") ?: "Luminosity"
