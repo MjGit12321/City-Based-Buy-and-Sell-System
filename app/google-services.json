@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "736922682637",
+    "project_id": "appdev-backend",
+    "storage_bucket": "appdev-backend.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736922682637:android:daa5e85b1c98b31f409c44",
+        "android_client_info": {
+          "package_name": "com.example.appdevlocalbuyandsellsystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXqmOzs59Hl9aPXvx64MLQPAjxZmajBi0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

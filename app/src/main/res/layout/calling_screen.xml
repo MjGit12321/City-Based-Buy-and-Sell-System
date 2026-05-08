@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/green_gradient_bg">
+
+    <!-- Calling Label -->
+    <TextView
+        android:id="@+id/tvCallingLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="@string/calling_label"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Profile Image and Name Section -->
+    <LinearLayout
+        android:id="@+id/llCallerInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvCallingLabel">
+
+        <ImageView
+            android:id="@+id/ivCallerProfile"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:background="@drawable/circle_white_bg"
+            android:padding="8dp"
+            android:src="@drawable/ic_user"
+            app:tint="#1F6F5F"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/tvCallerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="@string/default_caller_name"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Call Timer -->
+    <TextView
+        android:id="@+id/tvCallTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/timer_start"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/llCallerInfo" />
+
+    <!-- Control Buttons Section -->
+    <LinearLayout
+        android:id="@+id/llControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/btnEndCall">
+
+        <!-- Mute -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="20dp">
+            <ImageButton
+                android:id="@+id/btnMute"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/circle_gray_bg"
+                android:src="@android:drawable/stat_notify_call_mute"
+                app:tint="#333333"
+                android:contentDescription="@string/mute" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/mute"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Record -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="20dp">
+            <ImageButton
+                android:id="@+id/btnRecord"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/circle_gray_bg"
+                android:src="@android:drawable/ic_btn_speak_now"
+                app:tint="#333333"
+                android:contentDescription="@string/record" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/record"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Pause -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="20dp">
+            <ImageButton
+                android:id="@+id/btnPause"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/circle_gray_bg"
+                android:src="@android:drawable/ic_media_pause"
+                app:tint="#333333"
+                android:contentDescription="@string/pause" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/pause"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- End Call Button -->
+    <ImageButton
+        android:id="@+id/btnEndCall"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="80dp"
+        android:background="@drawable/circle_red_bg"
+        android:src="@android:drawable/sym_action_call"
+        android:rotation="135"
+        app:tint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:contentDescription="@string/end_call" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
