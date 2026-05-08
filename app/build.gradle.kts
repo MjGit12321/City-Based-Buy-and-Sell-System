@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -41,8 +42,11 @@ dependencies {
     implementation(libs.androidx.cardview)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.firebase.firestore)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
 }

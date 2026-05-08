@@ -10,13 +10,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+// 1. IMPORT FIREBASE
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
+
+    // 2. DECLARE AUTH
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.login)
-        
+
+        // 3. INITIALIZE AUTH
+        auth = FirebaseAuth.getInstance()
+
         val mainView = findViewById<android.view.View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -24,28 +33,38 @@ class LoginActivity : AppCompatActivity() {
             insets
         }
 
-        val etUsername = findViewById<EditText>(R.id.editTextUsername)
+        val etEmail = findViewById<EditText>(R.id.editTextUsername)
         val etPassword = findViewById<EditText>(R.id.editTextPassword)
         val btnLoginAction = findViewById<Button>(R.id.buttonLoginAction)
         val tvSignUpLink = findViewById<TextView>(R.id.textViewSignUpLink)
 
         btnLoginAction.setOnClickListener {
-            val username = etUsername.text.toString()
-            val password = etPassword.text.toString()
+            val email = etEmail.text.toString().trim()
+            val password = etPassword.text.toString().trim()
 
-            if (username.isNotEmpty() && password.isNotEmpty()) {
-                // Navigate to MainpageActivity
-                val intent = Intent(this, MainpageActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-                finish() // Close LoginActivity
+            if (email.isNotEmpty() && password.isNotEmpty()) {
+
+                // 4. FIREBASE LOGIN EXECUTION
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this) { task ->
+                        if (task.isSuccessful) {
+                            // Success! Navigate to MainpageActivity
+                            val intent = Intent(this, MainpageActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            // Failure (e.g. wrong password or no such user)
+                            Toast.makeText(this, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+
             } else {
-                Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
             }
         }
 
         tvSignUpLink.setOnClickListener {
-            // Navigate to Sign Up screen
             startActivity(Intent(this, SigninActivity::class.java))
         }
     }

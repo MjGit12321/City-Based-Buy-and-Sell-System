@@ -10,15 +10,23 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+// 1. ADD THIS IMPORT
+import com.google.firebase.auth.FirebaseAuth
 
 class SigninActivity : AppCompatActivity() {
+
+    // 2. DECLARE FIREBASE AUTH
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.signin)
 
-        // Setup window insets for immersive feel
+        // 3. INITIALIZE FIREBASE AUTH
+        auth = FirebaseAuth.getInstance()
+
+        // Setup window insets
         val mainView = findViewById<android.view.View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -28,18 +36,35 @@ class SigninActivity : AppCompatActivity() {
 
         val btnSignUp = findViewById<Button>(R.id.buttonSignUp)
         val tvLoginLink = findViewById<TextView>(R.id.textViewLoginLink)
-        val etUsername = findViewById<EditText>(R.id.editTextUsername)
+        val etEmail = findViewById<EditText>(R.id.editTextUsername) // Used as Email
         val etPassword = findViewById<EditText>(R.id.editTextPassword)
         val etConfirmPassword = findViewById<EditText>(R.id.editTextConfirmPassword)
 
         btnSignUp.setOnClickListener {
-            val username = etUsername.text.toString()
-            val password = etPassword.text.toString()
-            val confirmPassword = etConfirmPassword.text.toString()
+            val email = etEmail.text.toString().trim()
+            val password = etPassword.text.toString().trim()
+            val confirmPassword = etConfirmPassword.text.toString().trim()
 
-            if (username.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
+            if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
                 if (password == confirmPassword) {
-                    Toast.makeText(this, "Successfully Signed Up!", Toast.LENGTH_SHORT).show()
+
+                    // 4. FIREBASE CREATE USER CALL
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this) { task ->
+                            if (task.isSuccessful) {
+                                // Success!
+                                Toast.makeText(this, "Successfully Signed Up!", Toast.LENGTH_SHORT).show()
+
+                                // Redirect to Mainpage
+                                val intent = Intent(this, MainpageActivity::class.java)
+                                startActivity(intent)
+                                finish() // Prevent going back to Signin screen
+                            } else {
+                                // Show specific Firebase error (e.g., "email already in use")
+                                Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+
                 } else {
                     Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
@@ -49,7 +74,6 @@ class SigninActivity : AppCompatActivity() {
         }
 
         tvLoginLink.setOnClickListener {
-            // Navigate back to Login or just finish
             startActivity(Intent(this, LoginActivity::class.java))
         }
     }
