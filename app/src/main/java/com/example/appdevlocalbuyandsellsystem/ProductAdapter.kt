@@ -20,8 +20,7 @@ class ProductAdapter(
         val tvPrice: TextView = itemView.findViewById(R.id.tvProductPrice)
         val tvName: TextView = itemView.findViewById(R.id.tvProductName)
         val tvDesc: TextView = itemView.findViewById(R.id.tvProductDesc)
-        val tvUsername: TextView = itemView.findViewById(R.id.tvProductUsername)
-        val tvRating: TextView = itemView.findViewById(R.id.tvRating)
+        val tvUsername: TextView = itemView.findViewById(R.id.tvProductSellerName)
         val ivFavorite: ImageView = itemView.findViewById(R.id.ivProductFavorite)
     }
 
@@ -33,13 +32,14 @@ class ProductAdapter(
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = productList[position]
-        holder.tvPrice.text = product.price
+
+        // Display logic
+        holder.tvPrice.text = "₱${product.price}"
         holder.tvName.text = product.name
         holder.tvDesc.text = product.description
-        holder.tvUsername.text = product.username
-        holder.tvRating.text = product.rating.toString()
+        holder.tvUsername.text = product.sellerName
 
-        // Handle favorite icon state
+        // Favorite icon logic
         if (product.isFavorite) {
             holder.ivFavorite.setImageResource(R.drawable.ic_heart_filled)
             holder.ivFavorite.setColorFilter(android.graphics.Color.parseColor("#FF0000"))
@@ -53,17 +53,61 @@ class ProductAdapter(
             notifyItemChanged(position)
         }
 
-        // Click Logic
+        // CLICK LOGIC: Navigate to Detail
+
+        // Display logic
+        holder.tvPrice.text = "₱${product.price}"
+        holder.tvName.text = product.name
+        holder.tvDesc.text = product.description
+        holder.tvUsername.text = product.sellerName
+
+        // Favorite icon logic
+        if (product.isFavorite) {
+            holder.ivFavorite.setImageResource(R.drawable.ic_heart_filled)
+            holder.ivFavorite.setColorFilter(android.graphics.Color.parseColor("#FF0000"))
+        } else {
+            holder.ivFavorite.setImageResource(R.drawable.ic_heart_outline)
+            holder.ivFavorite.setColorFilter(android.graphics.Color.parseColor("#888888"))
+        }
+
+        holder.ivFavorite.setOnClickListener {
+            product.isFavorite = !product.isFavorite
+            notifyItemChanged(position)
+        }
+
+        // Display logic
+        holder.tvPrice.text = "₱${product.price}"
+        holder.tvName.text = product.name
+        holder.tvDesc.text = product.description
+        holder.tvUsername.text = product.sellerName
+
+        // Favorite icon logic
+        if (product.isFavorite) {
+            holder.ivFavorite.setImageResource(R.drawable.ic_heart_filled)
+            holder.ivFavorite.setColorFilter(android.graphics.Color.parseColor("#FF0000"))
+        } else {
+            holder.ivFavorite.setImageResource(R.drawable.ic_heart_outline)
+            holder.ivFavorite.setColorFilter(android.graphics.Color.parseColor("#888888"))
+        }
+
+        holder.ivFavorite.setOnClickListener {
+            product.isFavorite = !product.isFavorite
+            notifyItemChanged(position)
+        }
+
+        // CLICK LOGIC: Navigate to Details
         holder.itemView.setOnClickListener {
-            if (onItemClick != null) {
-                onItemClick.invoke(product)
-            } else {
-                // Default navigation to generic ProductDetailsActivity
-                val context = holder.itemView.context
-                val intent = android.content.Intent(context, ProductDetailsActivity::class.java)
-                intent.putExtra("PRODUCT_DATA", product)
-                context.startActivity(intent)
-            }
+            val context = holder.itemView.context
+            val intent = android.content.Intent(context, ProductDetailsActivity::class.java)
+
+            // Pass individual strings for easier retrieval in Details Activity
+            intent.putExtra("PRODUCT_NAME", product.name)
+            intent.putExtra("PRODUCT_PRICE", product.price)
+            intent.putExtra("PRODUCT_DESC", product.description)
+            intent.putExtra("PRODUCT_SELLER", product.sellerName)
+            intent.putExtra("PRODUCT_LOCATION", product.location)
+
+            context.startActivity(intent)
         }
     }
 

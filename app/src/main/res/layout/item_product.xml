@@ -20,7 +20,7 @@
         android:contentDescription="Seller profile" />
 
     <TextView
-        android:id="@+id/tvProductUsername"
+        android:id="@+id/tvProductSellerName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
@@ -49,23 +49,6 @@
             app:tint="#888888"
             android:contentDescription="Add to favorites" />
 
-        <ImageView
-            android:id="@+id/ivStar"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/btn_star_big_on"
-            app:tint="#FFD700"
-            android:contentDescription="Rating" />
-
-        <TextView
-            android:id="@+id/tvRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:text="4.6"
-            android:textColor="#333333"
-            android:textSize="14sp"
-            android:textStyle="bold" />
     </LinearLayout>
 
     <ImageView

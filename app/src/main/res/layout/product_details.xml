@@ -134,42 +134,14 @@
                     app:layout_constraintStart_toEndOf="@id/ivSellerProfile"
                     app:layout_constraintTop_toTopOf="@id/ivSellerProfile" />
 
-                <TextView
-                    android:id="@+id/tvSoldAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="255 Sold"
-                    android:textColor="#666666"
-                    android:textSize="14sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/tvSoldAmount"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="5"
-                        android:textColor="#666666"
-                        android:textSize="14sp" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginStart="4dp"
-                        android:src="@android:drawable/btn_star_big_on"
-                        app:tint="#FFD700"
-                        android:contentDescription="@null" />
-                </LinearLayout>
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:layout_editor_absoluteX="292dp"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -200,6 +172,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/tvDescriptionLabel"
                 app:layout_constraintTop_toBottomOf="@id/tvDescriptionLabel" />
+
+            <TextView
+                android:id="@+id/tvProductLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:text="Location: "
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvProductDetailDesc" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

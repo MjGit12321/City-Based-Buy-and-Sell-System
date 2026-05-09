@@ -12,11 +12,13 @@ data class Product(
     val name: String = "",
     val description: String = "",
     val username: String = "",
-    val sellerID: String = "",
+    val sellerName: String = "",
     val rating: Float = 0.0f,
     val baranggay: String = "",
     val city: String = "",
     val province: String = "",
+    val region: String = "",
     var isFavorite: Boolean = false,
-    val timestamp: Timestamp? = null
+    val timestamp: Timestamp? = null,
+    val location : String = baranggay + city + province + region
 ) : Serializable

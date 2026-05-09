@@ -11,14 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-// 1. IMPORT FIREBASE
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 
 class UploadProductActivity : AppCompatActivity() {
 
-    // 2. DECLARE FIREBASE
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -34,57 +32,75 @@ class UploadProductActivity : AppCompatActivity() {
             insets
         }
 
-        // References to your EditTexts (Ensure these IDs match your XML)
         val etProductName = findViewById<EditText>(R.id.etProductName)
         val etProductPrice = findViewById<EditText>(R.id.etPrice)
         val etProductDescription = findViewById<EditText>(R.id.etProductDesc)
-        val etBarangay = findViewById<EditText>(R.id.etBarangay)
-        val etCity = findViewById<EditText>(R.id.etCity)
-        val etProvince = findViewById<EditText>(R.id.etProvince)
 
         findViewById<ConstraintLayout>(R.id.containerUploadImage).setOnClickListener {
             Toast.makeText(this, "Opening Gallery...", Toast.LENGTH_SHORT).show()
         }
 
-        // 3. UPDATED UPLOAD BUTTON LOGIC
+        // UPDATED UPLOAD BUTTON LOGIC
         findViewById<Button>(R.id.btnUploadSubmit).setOnClickListener {
             val name = etProductName.text.toString().trim()
             val price = etProductPrice.text.toString().trim()
             val description = etProductDescription.text.toString().trim()
-            val baranggay = etBarangay.text.toString().trim()
-            val city = etCity.text.toString().trim()
-            val province = etProvince.text.toString().trim()
             val currentUserId = auth.currentUser?.uid
 
             if (name.isNotEmpty() && price.isNotEmpty() && currentUserId != null) {
 
-                // Create data map
-                val product = hashMapOf(
-                    "name" to name,
-                    "price" to price,
-                    "description" to description,
-                    "baranggay" to baranggay,
-                    "city" to city,
-                    "province" to province,
-                    "sellerId" to currentUserId,
-                    "username" to (auth.currentUser?.displayName ?: "Unknown Seller"),
-                    "rating" to 0.0f,
-                    "timestamp" to FieldValue.serverTimestamp() // For "Newest First" sorting
-                )
+                // 1. Fetch the User's profile data first to get Name and Location
+                db.collection("users").document(currentUserId).get()
+                    .addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) {
+                            // 2. Extract profile details
+                            val sellerName = snapshot.getString("fullName") ?: "Unknown Seller"
+                            val brgy = snapshot.getString("barangay") ?: ""
+                            val city = snapshot.getString("city") ?: ""
+                            val prov = snapshot.getString("province") ?: ""
+                            val reg = snapshot.getString("region") ?: ""
 
-                // 4. SAVE TO FIRESTORE
-                db.collection("products")
-                    .add(product)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Product Uploaded Successfully!", Toast.LENGTH_LONG).show()
+                            // Create the formatted address string
+                            val sellerLocation = if (brgy.isNotEmpty()) {
+                                "$brgy, $city, $prov, $reg"
+                            } else {
+                                "Location not set"
+                            }
 
-                        val intent = Intent(this, MainpageActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        startActivity(intent)
-                        finish()
+                            // 3. Create the product data map with profile info
+                            val product = hashMapOf(
+                                "name" to name,
+                                "price" to price,
+                                "description" to description,
+                                "sellerId" to currentUserId,
+                                "sellerName" to sellerName,
+                                "location" to sellerLocation,
+                                "brgy" to brgy,
+                                "city" to city,
+                                "prov" to prov,
+                                "reg" to reg,
+                                "timestamp" to FieldValue.serverTimestamp()
+                            )
+
+                            // 4. Save to "products" collection
+                            db.collection("products")
+                                .add(product)
+                                .addOnSuccessListener {
+                                    Toast.makeText(this, "Product Uploaded Successfully!", Toast.LENGTH_LONG).show()
+                                    val intent = Intent(this, MainpageActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                .addOnFailureListener { e ->
+                                    Toast.makeText(this, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            Toast.makeText(this, "User profile not found. Please complete your profile.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(this, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Error fetching profile: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
                 Toast.makeText(this, "Please fill in required fields", Toast.LENGTH_SHORT).show()
@@ -92,6 +108,10 @@ class UploadProductActivity : AppCompatActivity() {
         }
 
         // Navigation Bar Listeners
+        setupNavigation()
+    }
+
+    private fun setupNavigation() {
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainpageActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP

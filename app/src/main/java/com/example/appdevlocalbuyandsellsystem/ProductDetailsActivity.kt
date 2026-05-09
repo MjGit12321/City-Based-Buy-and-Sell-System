@@ -2,6 +2,7 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -17,6 +18,20 @@ class ProductDetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.product_details)
+
+        // Retrieve the extras
+        val name = intent.getStringExtra("PRODUCT_NAME")
+        val price = intent.getStringExtra("PRODUCT_PRICE")
+        val desc = intent.getStringExtra("PRODUCT_DESC")
+        val seller = intent.getStringExtra("PRODUCT_SELLER")
+        val location = intent.getStringExtra("PRODUCT_LOCATION")
+
+        // Set them to your Views (Ensure these IDs exist in your layout)
+        findViewById<TextView>(R.id.tvProductDetailTitle).text = name
+        findViewById<TextView>(R.id.tvProductDetailPrice).text = "₱$price"
+        findViewById<TextView>(R.id.tvProductDetailDesc).text = desc
+        findViewById<TextView>(R.id.tvSellerName).text = seller
+        findViewById<TextView>(R.id.tvProductLocation).text = "Location: $location"
 
         // Adjust for system bars
         val rootLayout = findViewById<android.view.View>(android.R.id.content)
