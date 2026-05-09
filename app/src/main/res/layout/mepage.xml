@@ -42,7 +42,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="@string/user_name"
+                    android:text="Profile"
                     android:textColor="#FFFFFF"
                     android:textSize="24sp"
                     android:textStyle="bold"
@@ -103,22 +103,16 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvMeFullName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="8dp"
-                    android:text="@string/email_label"
+                    android:text="Full Name: "
                     android:textColor="#FFFFFF"
                     android:textSize="15sp" />
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingVertical="8dp"
-                    android:text="@string/facebook_label"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp" />
-
-                <TextView
+                    android:id="@+id/tvMeContact"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="8dp"
@@ -127,6 +121,7 @@
                     android:textSize="15sp" />
 
                 <TextView
+                    android:id="@+id/tvMeAltContact"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="8dp"
@@ -135,6 +130,7 @@
                     android:textSize="15sp" />
 
                 <TextView
+                    android:id="@+id/tvMeAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="8dp"
@@ -143,6 +139,7 @@
                     android:textSize="15sp" />
 
                 <TextView
+                    android:id="@+id/tvMeHobbies"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="8dp"
