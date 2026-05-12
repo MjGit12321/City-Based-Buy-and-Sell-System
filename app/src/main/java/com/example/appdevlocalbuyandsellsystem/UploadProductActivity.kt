@@ -40,7 +40,6 @@ class UploadProductActivity : AppCompatActivity() {
             Toast.makeText(this, "Opening Gallery...", Toast.LENGTH_SHORT).show()
         }
 
-        // UPDATED UPLOAD BUTTON LOGIC
         findViewById<Button>(R.id.btnUploadSubmit).setOnClickListener {
             val name = etProductName.text.toString().trim()
             val price = etProductPrice.text.toString().trim()
@@ -49,30 +48,28 @@ class UploadProductActivity : AppCompatActivity() {
 
             if (name.isNotEmpty() && price.isNotEmpty() && currentUserId != null) {
 
-                // 1. Fetch the User's profile data first to get Name and Location
                 db.collection("users").document(currentUserId).get()
                     .addOnSuccessListener { snapshot ->
                         if (snapshot.exists()) {
-                            // 2. Extract profile details
                             val sellerName = snapshot.getString("fullName") ?: "Unknown Seller"
                             val brgy = snapshot.getString("barangay") ?: ""
                             val city = snapshot.getString("city") ?: ""
                             val prov = snapshot.getString("province") ?: ""
                             val reg = snapshot.getString("region") ?: ""
 
-                            // Create the formatted address string
                             val sellerLocation = if (brgy.isNotEmpty()) {
                                 "$brgy, $city, $prov, $reg"
                             } else {
                                 "Location not set"
                             }
 
-                            // 3. Create the product data map with profile info
+                            // Save with both casings for maximum compatibility
                             val product = hashMapOf(
                                 "name" to name,
                                 "price" to price,
                                 "description" to description,
                                 "sellerID" to currentUserId,
+                                "sellerId" to currentUserId,
                                 "sellerName" to sellerName,
                                 "location" to sellerLocation,
                                 "baranggay" to brgy,
@@ -82,7 +79,6 @@ class UploadProductActivity : AppCompatActivity() {
                                 "timestamp" to FieldValue.serverTimestamp()
                             )
 
-                            // 4. Save to "products" collection
                             db.collection("products")
                                 .add(product)
                                 .addOnSuccessListener {
@@ -96,7 +92,7 @@ class UploadProductActivity : AppCompatActivity() {
                                     Toast.makeText(this, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
                         } else {
-                            Toast.makeText(this, "User profile not found. Please complete your profile.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "User profile incomplete.", Toast.LENGTH_SHORT).show()
                         }
                     }
                     .addOnFailureListener { e ->
@@ -107,7 +103,6 @@ class UploadProductActivity : AppCompatActivity() {
             }
         }
 
-        // Navigation Bar Listeners
         setupNavigation()
     }
 
@@ -117,15 +112,12 @@ class UploadProductActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
-
         findViewById<LinearLayout>(R.id.navMessages).setOnClickListener {
             startActivity(Intent(this, InboxActivity::class.java))
         }
-
         findViewById<LinearLayout>(R.id.navFavorites).setOnClickListener {
             startActivity(Intent(this, FavoritesActivity::class.java))
         }
-
         findViewById<LinearLayout>(R.id.navMe).setOnClickListener {
             startActivity(Intent(this, MeActivity::class.java))
             finish()

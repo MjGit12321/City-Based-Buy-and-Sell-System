@@ -2,6 +2,7 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -14,7 +15,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-// 1. ADD FIREBASE IMPORTS
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
@@ -25,7 +25,6 @@ class MainpageActivity : AppCompatActivity() {
     private lateinit var spinnerBarangay: Spinner
     private lateinit var rvProducts: RecyclerView
 
-    // 2. INITIALIZE FIRESTORE
     private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,18 +40,15 @@ class MainpageActivity : AppCompatActivity() {
         rvProducts.layoutManager = LinearLayoutManager(this)
 
         setupHierarchicalFilters()
-
-        // 3. INITIAL FETCH (Show all products by default)
         fetchProductsFromFirebase()
 
-        val mainView = findViewById<android.view.View>(android.R.id.content)
+        val mainView = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // Navigation listeners stay the same...
         findViewById<LinearLayout>(R.id.navMessages).setOnClickListener {
             startActivity(Intent(this, InboxActivity::class.java))
         }
@@ -64,9 +60,7 @@ class MainpageActivity : AppCompatActivity() {
         }
     }
 
-    // 4. THE FIREBASE FETCH FUNCTION
     private fun fetchProductsFromFirebase(cityFilter: String? = null) {
-        // 1. SIMPLIFY: Remove .orderBy for now to prevent the crash
         var query: Query = db.collection("products")
 
         if (!cityFilter.isNullOrEmpty()) {
@@ -75,16 +69,28 @@ class MainpageActivity : AppCompatActivity() {
 
         query.addSnapshotListener { snapshots, e ->
             if (e != null) {
-                // This is where the error log is sent
-                android.util.Log.e("FirestoreError", "Query failed: ${e.message}")
+                Log.e("FirestoreError", "Query failed: ${e.message}")
                 return@addSnapshotListener
             }
 
             val productList = mutableListOf<Product>()
-            if (snapshots != null) {
-                for (doc in snapshots) {
-                    val product = doc.toObject(Product::class.java)
+            snapshots?.forEach { doc ->
+                try {
+                    // Manually map fields to be extremely safe against parsing crashes
+                    val product = Product(
+                        price = doc.getString("price") ?: "",
+                        name = doc.getString("name") ?: "Unnamed Product",
+                        description = doc.getString("description") ?: "",
+                        sellerName = doc.getString("sellerName") ?: "Unknown Seller",
+                        sellerID = doc.getString("sellerID") ?: doc.getString("sellerId") ?: "",
+                        baranggay = doc.getString("baranggay") ?: doc.getString("brgy") ?: "",
+                        city = doc.getString("city") ?: "",
+                        province = doc.getString("province") ?: doc.getString("prov") ?: "",
+                        location = doc.getString("location") ?: ""
+                    )
                     productList.add(product)
+                } catch (ex: Exception) {
+                    Log.e("ParsingError", "Failed to parse product ${doc.id}: ${ex.message}")
                 }
             }
 
@@ -108,7 +114,6 @@ class MainpageActivity : AppCompatActivity() {
                 if (selectedProvince.isNotEmpty()) {
                     updateCityList(selectedProvince)
                 } else {
-                    // Reset to show all if no province selected
                     fetchProductsFromFirebase()
                 }
             }
@@ -134,7 +139,6 @@ class MainpageActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedCity = cities[position]
                 if (selectedCity.isNotEmpty()) {
-                    // 5. FILTER PRODUCTS BY THE SELECTED CITY
                     fetchProductsFromFirebase(selectedCity)
                     updateBarangayList(selectedCity)
                 }

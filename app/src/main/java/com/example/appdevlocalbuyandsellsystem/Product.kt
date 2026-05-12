@@ -5,21 +5,28 @@ import java.util.Date
 
 /**
  * Data model for a Product.
- * Holds information about price, name, and description.
+ * Uses default values to ensure a no-arg constructor for Firestore.
  */
 data class Product(
-    val price: String = "",
-    val name: String = "",
-    val description: String = "",
-    val username: String = "",
-    val sellerName: String = "",
-    val sellerID: String = "",
-    val rating: Float = 0.0f,
-    val baranggay: String = "",
-    val city: String = "",
-    val province: String = "",
-    val region: String = "",
+    var price: String = "",
+    var name: String = "",
+    var description: String = "",
+    var username: String = "",
+    var sellerName: String = "",
+    var sellerID: String = "", // Primary ID field
+    var sellerId: String = "", // Fallback ID field for different database casings
+    var rating: Float = 0.0f,
+    var baranggay: String = "",
+    var city: String = "",
+    var province: String = "",
+    var region: String = "",
     var isFavorite: Boolean = false,
-    val timestamp: Date? = null,
-    val location : String = baranggay + city + province + region
-) : Serializable
+    var timestamp: Date? = null,
+    var location: String = ""
+) : Serializable {
+    
+    // Helper to get the correct seller ID regardless of field name in database
+    fun getSafeSellerId(): String {
+        return if (sellerID.isNotEmpty()) sellerID else sellerId
+    }
+}

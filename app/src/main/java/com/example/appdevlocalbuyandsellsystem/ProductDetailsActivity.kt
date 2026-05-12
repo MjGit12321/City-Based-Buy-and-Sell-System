@@ -3,6 +3,7 @@ package com.example.appdevlocalbuyandsellsystem
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -27,15 +28,14 @@ class ProductDetailsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.product_details)
 
-        // Adjust for system bars
-        val rootLayout = findViewById<android.view.View>(android.R.id.content)
+        val rootLayout = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // Get Product Data from Intent safely
+        // Get Product Data safely
         val product = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra("PRODUCT_DATA", Product::class.java)
         } else {
@@ -43,19 +43,16 @@ class ProductDetailsActivity : AppCompatActivity() {
             intent.getSerializableExtra("PRODUCT_DATA") as? Product
         }
 
-        // Display Data
         product?.let {
             findViewById<TextView>(R.id.tvProductDetailTitle).text = it.name
             findViewById<TextView>(R.id.tvProductDetailPrice).text = "₱${it.price}"
             findViewById<TextView>(R.id.tvProductDetailDesc).text = it.description
             findViewById<TextView>(R.id.tvSellerName).text = it.sellerName
             
-            // Format location string if it's not empty, otherwise use individual fields
             val locationText = if (it.location.isNotBlank()) it.location else "${it.baranggay} ${it.city} ${it.province}"
             findViewById<TextView>(R.id.tvProductLocation).text = "Location: $locationText"
         }
 
-        // FAB Click Listeners
         findViewById<FloatingActionButton>(R.id.fabAddProduct).setOnClickListener {
             Toast.makeText(this, "Product added to wishlist!", Toast.LENGTH_SHORT).show()
         }
@@ -63,7 +60,7 @@ class ProductDetailsActivity : AppCompatActivity() {
         // Messaging Logic
         findViewById<FloatingActionButton>(R.id.fabMessageSeller).setOnClickListener {
             val currentUserId = auth.currentUser?.uid
-            val sellerId = product?.sellerID
+            val sellerId = product?.getSafeSellerId()
             val sellerName = product?.sellerName ?: "Seller"
 
             if (currentUserId == null) {
@@ -72,7 +69,7 @@ class ProductDetailsActivity : AppCompatActivity() {
             }
 
             if (sellerId.isNullOrEmpty()) {
-                Toast.makeText(this, "Seller information missing", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Seller ID missing for this item", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -81,14 +78,8 @@ class ProductDetailsActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Create a unique Chat ID (alphabetical order ensures both see the same room)
-            val chatId = if (currentUserId < sellerId) {
-                "${currentUserId}_${sellerId}"
-            } else {
-                "${sellerId}_${currentUserId}"
-            }
+            val chatId = if (currentUserId < sellerId) "${currentUserId}_${sellerId}" else "${sellerId}_${currentUserId}"
 
-            // Initialize the chat document in Firestore
             db.collection("users").document(currentUserId).get().addOnSuccessListener { snapshot ->
                 val currentUserName = snapshot.getString("fullName") ?: "User"
 
@@ -117,14 +108,12 @@ class ProductDetailsActivity : AppCompatActivity() {
             }
         }
 
-        // Navigate to Seller Profile
-        findViewById<android.view.View>(R.id.sellerSection).setOnClickListener {
+        findViewById<View>(R.id.sellerSection).setOnClickListener {
             val intent = Intent(this, ViewOtherUserProfileActivity::class.java)
-            intent.putExtra("SELLER_ID", product?.sellerID)
+            intent.putExtra("SELLER_ID", product?.getSafeSellerId())
             startActivity(intent)
         }
 
-        // Navigation Bar Logic
         setupNavigation()
     }
 
@@ -134,15 +123,12 @@ class ProductDetailsActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
-
         findViewById<LinearLayout>(R.id.navMessages).setOnClickListener {
             startActivity(Intent(this, InboxActivity::class.java))
         }
-
         findViewById<LinearLayout>(R.id.navMe).setOnClickListener {
             startActivity(Intent(this, MeActivity::class.java))
         }
-
         findViewById<LinearLayout>(R.id.navFavorites).setOnClickListener {
             startActivity(Intent(this, FavoritesActivity::class.java))
         }
