@@ -1,8 +1,8 @@
 package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -11,27 +11,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ProductDetailsActivity : AppCompatActivity() {
+
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.product_details)
-
-        // Retrieve the extras
-        val name = intent.getStringExtra("PRODUCT_NAME")
-        val price = intent.getStringExtra("PRODUCT_PRICE")
-        val desc = intent.getStringExtra("PRODUCT_DESC")
-        val seller = intent.getStringExtra("PRODUCT_SELLER")
-        val location = intent.getStringExtra("PRODUCT_LOCATION")
-
-        // Set them to your Views (Ensure these IDs exist in your layout)
-        findViewById<TextView>(R.id.tvProductDetailTitle).text = name
-        findViewById<TextView>(R.id.tvProductDetailPrice).text = "₱$price"
-        findViewById<TextView>(R.id.tvProductDetailDesc).text = desc
-        findViewById<TextView>(R.id.tvSellerName).text = seller
-        findViewById<TextView>(R.id.tvProductLocation).text = "Location: $location"
 
         // Adjust for system bars
         val rootLayout = findViewById<android.view.View>(android.R.id.content)
@@ -41,15 +35,24 @@ class ProductDetailsActivity : AppCompatActivity() {
             insets
         }
 
-        // Get Product Data from Intent
-        val product = intent.getSerializableExtra("PRODUCT_DATA") as? Product
+        // Get Product Data from Intent safely
+        val product = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra("PRODUCT_DATA", Product::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra("PRODUCT_DATA") as? Product
+        }
 
-        // Display Data if available
+        // Display Data
         product?.let {
             findViewById<TextView>(R.id.tvProductDetailTitle).text = it.name
-            findViewById<TextView>(R.id.tvProductDetailPrice).text = it.price
+            findViewById<TextView>(R.id.tvProductDetailPrice).text = "₱${it.price}"
             findViewById<TextView>(R.id.tvProductDetailDesc).text = it.description
-            findViewById<TextView>(R.id.tvSellerName).text = it.username
+            findViewById<TextView>(R.id.tvSellerName).text = it.sellerName
+            
+            // Format location string if it's not empty, otherwise use individual fields
+            val locationText = if (it.location.isNotBlank()) it.location else "${it.baranggay} ${it.city} ${it.province}"
+            findViewById<TextView>(R.id.tvProductLocation).text = "Location: $locationText"
         }
 
         // FAB Click Listeners
@@ -57,19 +60,75 @@ class ProductDetailsActivity : AppCompatActivity() {
             Toast.makeText(this, "Product added to wishlist!", Toast.LENGTH_SHORT).show()
         }
 
+        // Messaging Logic
         findViewById<FloatingActionButton>(R.id.fabMessageSeller).setOnClickListener {
-            val sellerName = product?.username ?: "Seller"
-            val intent = Intent(this, MessageActivity::class.java)
-            intent.putExtra("USER_NAME", sellerName)
-            startActivity(intent)
+            val currentUserId = auth.currentUser?.uid
+            val sellerId = product?.sellerID
+            val sellerName = product?.sellerName ?: "Seller"
+
+            if (currentUserId == null) {
+                Toast.makeText(this, "Please login to message the seller", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (sellerId.isNullOrEmpty()) {
+                Toast.makeText(this, "Seller information missing", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (currentUserId == sellerId) {
+                Toast.makeText(this, "You cannot message yourself!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Create a unique Chat ID (alphabetical order ensures both see the same room)
+            val chatId = if (currentUserId < sellerId) {
+                "${currentUserId}_${sellerId}"
+            } else {
+                "${sellerId}_${currentUserId}"
+            }
+
+            // Initialize the chat document in Firestore
+            db.collection("users").document(currentUserId).get().addOnSuccessListener { snapshot ->
+                val currentUserName = snapshot.getString("fullName") ?: "User"
+
+                val chatData = hashMapOf(
+                    "participants" to listOf(currentUserId, sellerId),
+                    "names" to mapOf(
+                        currentUserId to currentUserName,
+                        sellerId to sellerName
+                    ),
+                    "lastMessage" to "Interested in ${product.name}",
+                    "lastTimestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "lastTime" to SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
+                )
+
+                db.collection("chats").document(chatId)
+                    .set(chatData, SetOptions.merge())
+                    .addOnSuccessListener {
+                        val intent = Intent(this, MessageActivity::class.java)
+                        intent.putExtra("CHAT_ID", chatId)
+                        intent.putExtra("USER_NAME", sellerName)
+                        startActivity(intent)
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Failed to start chat", Toast.LENGTH_SHORT).show()
+                    }
+            }
         }
 
         // Navigate to Seller Profile
         findViewById<android.view.View>(R.id.sellerSection).setOnClickListener {
-            startActivity(Intent(this, ViewOtherUserProfileActivity::class.java))
+            val intent = Intent(this, ViewOtherUserProfileActivity::class.java)
+            intent.putExtra("SELLER_ID", product?.sellerID)
+            startActivity(intent)
         }
 
         // Navigation Bar Logic
+        setupNavigation()
+    }
+
+    private fun setupNavigation() {
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainpageActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP

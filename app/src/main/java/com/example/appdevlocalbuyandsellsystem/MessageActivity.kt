@@ -6,19 +6,38 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import java.text.SimpleDateFormat
+import java.util.*
+import com.google.firebase.firestore.FieldValue
 
 class MessageActivity : AppCompatActivity() {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private lateinit var adapter: ChatAdapter
+    private val chatMessages = mutableListOf<ChatMessage>()
+    private var chatId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.messagepage)
+
+        // Retrieve Chat Info from Intent
+        chatId = intent.getStringExtra("CHAT_ID")
+        val userName = intent.getStringExtra("USER_NAME") ?: "User"
+        findViewById<TextView>(R.id.tvUserName).text = userName
 
         // Adjust for system bars
         val rootLayout = findViewById<android.view.View>(android.R.id.content)
@@ -28,77 +47,16 @@ class MessageActivity : AppCompatActivity() {
             insets
         }
 
-        // Setup Back Button
-        findViewById<ImageView>(R.id.ivBack).setOnClickListener {
-            finish()
-        }
-
-        findViewById<ImageView>(R.id.ivCall).setOnClickListener {
-            startActivity(Intent(this, CallingActivity::class.java))
-        }
-
         // Setup RecyclerView
         val rvChat = findViewById<RecyclerView>(R.id.rvChat)
-        val userName = intent.getStringExtra("USER_NAME") ?: "Luminosity"
-        
-        // Update header name
-        findViewById<android.widget.TextView>(R.id.tvUserName).text = userName
-
-        val chatMessages = mutableListOf<ChatMessage>()
-        
-        // Generate a fake conversation based on the user name
-        when (userName) {
-            "Luminosity" -> {
-                chatMessages.addAll(listOf(
-                    ChatMessage("", "Yesterday", MessageType.TIMESTAMP),
-                    ChatMessage("Is the camera still for sale?", "9:00pm", MessageType.RECEIVED),
-                    ChatMessage("Yes, it is! Are you interested?", "9:05pm", MessageType.SENT),
-                    ChatMessage("I am! Is there any room for negotiation?", "9:10pm", MessageType.RECEIVED),
-                    ChatMessage("A little bit, what's your offer?", "9:15pm", MessageType.SENT)
-                ))
-            }
-            "Soppe" -> {
-                chatMessages.addAll(listOf(
-                    ChatMessage("", "Today at 8:30am", MessageType.TIMESTAMP),
-                    ChatMessage("Hey, are you free to meet up today?", "8:31am", MessageType.RECEIVED),
-                    ChatMessage("Yes, I can meet you tomorrow at the mall.", "8:35am", MessageType.SENT),
-                    ChatMessage("That works for me. Which mall?", "8:36am", MessageType.RECEIVED)
-                ))
-            }
-            "Janahn" -> {
-                chatMessages.addAll(listOf(
-                    ChatMessage("", "Yesterday", MessageType.TIMESTAMP),
-                    ChatMessage("The bike is in great condition!", "10:00am", MessageType.RECEIVED),
-                    ChatMessage("That's great to hear. Can I see it?", "10:05am", MessageType.SENT)
-                ))
-            }
-            "Mags" -> {
-                chatMessages.addAll(listOf(
-                    ChatMessage("", "Tuesday", MessageType.TIMESTAMP),
-                    ChatMessage("Thanks for the discount!", "2:00pm", MessageType.RECEIVED),
-                    ChatMessage("No problem, glad you like it!", "2:05pm", MessageType.SENT)
-                ))
-            }
-            "Cisis" -> {
-                chatMessages.addAll(listOf(
-                    ChatMessage("", "Monday", MessageType.TIMESTAMP),
-                    ChatMessage("Where is the pickup location?", "11:00am", MessageType.RECEIVED),
-                    ChatMessage("Near the central station.", "11:10am", MessageType.SENT)
-                ))
-            }
-            else -> {
-                chatMessages.addAll(listOf(
-                    ChatMessage("", "Recently", MessageType.TIMESTAMP),
-                    ChatMessage("Hello there!", "Now", MessageType.RECEIVED)
-                ))
-            }
-        }
-
-        val adapter = ChatAdapter(chatMessages)
+        adapter = ChatAdapter(chatMessages)
         val layoutManager = LinearLayoutManager(this)
-        layoutManager.stackFromEnd = true // Start filling the list from the bottom
+        layoutManager.stackFromEnd = true
         rvChat.layoutManager = layoutManager
         rvChat.adapter = adapter
+
+        // Listen for Messages
+        listenForMessages()
 
         // Setup Send Button
         val etMessage = findViewById<EditText>(R.id.etMessage)
@@ -106,42 +64,66 @@ class MessageActivity : AppCompatActivity() {
 
         btnSend.setOnClickListener {
             val text = etMessage.text.toString().trim()
-            if (text.isNotEmpty()) {
-                chatMessages.add(ChatMessage(text, "Just now", MessageType.SENT))
-                adapter.notifyItemInserted(chatMessages.size - 1)
-                rvChat.scrollToPosition(chatMessages.size - 1)
+            if (text.isNotEmpty() && chatId != null) {
+                sendMessage(text)
                 etMessage.text.clear()
             }
         }
 
-        // Scroll to bottom when keyboard appears
-        rvChat.addOnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
-            if (bottom < oldBottom) {
-                rvChat.postDelayed({
-                    if (chatMessages.isNotEmpty()) {
-                        rvChat.smoothScrollToPosition(chatMessages.size - 1)
+        // Back Button
+        findViewById<ImageView>(R.id.ivBack).setOnClickListener { finish() }
+    }
+
+    private fun listenForMessages() {
+        val id = chatId ?: return
+
+        db.collection("chats").document(id).collection("messages")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshots, e ->
+                if (e != null) return@addSnapshotListener
+
+                if (snapshots != null) {
+                    chatMessages.clear()
+                    for (doc in snapshots) {
+                        val text = doc.getString("message") ?: ""
+                        val senderId = doc.getString("senderId") ?: ""
+                        val time = doc.getTimestamp("timestamp")?.toDate()?.let {
+                            SimpleDateFormat("h:mm a", Locale.getDefault()).format(it)
+                        } ?: "Now"
+
+                        val type = if (senderId == auth.currentUser?.uid) {
+                            MessageType.SENT
+                        } else {
+                            MessageType.RECEIVED
+                        }
+
+                        chatMessages.add(ChatMessage(text, time, type))
                     }
-                }, 100)
+                    adapter.notifyDataSetChanged()
+                    findViewById<RecyclerView>(R.id.rvChat).scrollToPosition(chatMessages.size - 1)
+                }
             }
-        }
+    }
 
-        // Navigation bar logic
-        findViewById<LinearLayout>(R.id.navMessages).setOnClickListener {
-            startActivity(Intent(this, InboxActivity::class.java))
-        }
+    private fun sendMessage(text: String) {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val id = chatId ?: return
 
-        findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
-            val intent = Intent(this, MainpageActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            startActivity(intent)
-        }
+        val messageData = hashMapOf(
+            "message" to text,
+            "senderId" to currentUserId,
+            "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp()
+        )
 
-        findViewById<LinearLayout>(R.id.navFavorites).setOnClickListener {
-            startActivity(Intent(this, FavoritesActivity::class.java))
-        }
+        // 1. Add message to sub-collection
+        db.collection("chats").document(id).collection("messages").add(messageData)
 
-        findViewById<LinearLayout>(R.id.navMe).setOnClickListener {
-            startActivity(Intent(this, MeActivity::class.java))
-        }
+        // 2. Update the main chat document for the Inbox preview
+        val chatUpdate = hashMapOf(
+            "lastMessage" to text,
+            "lastTimestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+            "lastTime" to SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
+        )
+        db.collection("chats").document(id).update(chatUpdate as Map<String, Any>)
     }
 }

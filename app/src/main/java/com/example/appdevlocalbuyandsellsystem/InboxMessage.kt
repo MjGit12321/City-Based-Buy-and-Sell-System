@@ -7,6 +7,7 @@ data class InboxMessage(
     val id: Int,
     val name: String,
     val lastMessage: String,
-    val date: String,
-    val unreadCount: Int = 0
+    val time: String,
+    val unreadCount: Int,
+    var originalDocId: String = ""
 )

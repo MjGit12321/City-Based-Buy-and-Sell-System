@@ -59,6 +59,21 @@
         app:layout_constraintTop_toBottomOf="@id/inboxHeader"
         tools:listitem="@layout/item_inbox" />
 
+    <!-- Empty State Message -->
+    <TextView
+        android:id="@+id/tvNoMessages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No message yet"
+        android:textColor="#888888"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/inboxHeader" />
+
     <!-- FAB Add -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabInboxAdd"

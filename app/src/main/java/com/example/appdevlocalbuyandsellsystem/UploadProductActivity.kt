@@ -72,13 +72,13 @@ class UploadProductActivity : AppCompatActivity() {
                                 "name" to name,
                                 "price" to price,
                                 "description" to description,
-                                "sellerId" to currentUserId,
+                                "sellerID" to currentUserId,
                                 "sellerName" to sellerName,
                                 "location" to sellerLocation,
-                                "brgy" to brgy,
+                                "baranggay" to brgy,
                                 "city" to city,
-                                "prov" to prov,
-                                "reg" to reg,
+                                "province" to prov,
+                                "region" to reg,
                                 "timestamp" to FieldValue.serverTimestamp()
                             )
 

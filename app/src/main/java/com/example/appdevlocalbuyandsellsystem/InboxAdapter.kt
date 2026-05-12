@@ -31,7 +31,7 @@ class InboxAdapter(
         val conversation = inboxList[position]
         holder.tvName.text = conversation.name
         holder.tvLastMessage.text = conversation.lastMessage
-        holder.tvDate.text = conversation.date
+        holder.tvDate.text = conversation.time
 
         if (conversation.unreadCount > 0) {
             holder.tvUnread.visibility = View.VISIBLE
