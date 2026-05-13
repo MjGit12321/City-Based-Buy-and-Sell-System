@@ -76,6 +76,7 @@ class InboxActivity : AppCompatActivity() {
                     val intent = Intent(this, MessageActivity::class.java)
                     intent.putExtra("CHAT_ID", conversation.originalDocId)
                     intent.putExtra("USER_NAME", conversation.name)
+                    intent.putExtra("OTHER_USER_ID", conversation.otherUserId)
                     startActivity(intent)
                 }
             },
@@ -189,6 +190,12 @@ class InboxActivity : AppCompatActivity() {
         if (displayedConversations.isEmpty()) {
             tvNoMessages.visibility = View.VISIBLE
             rvInbox.visibility = View.GONE
+            
+            if (etSearch.text.isNotEmpty()) {
+                tvNoMessages.text = getString(R.string.no_user_found)
+            } else {
+                tvNoMessages.text = getString(R.string.no_messages)
+            }
         } else {
             tvNoMessages.visibility = View.GONE
             rvInbox.visibility = View.VISIBLE
@@ -252,7 +259,8 @@ class InboxActivity : AppCompatActivity() {
                         if (pendingDeleteIds.contains(doc.id)) continue
 
                         val namesMap = doc.get("names") as? Map<String, String>
-                        val otherUserName = namesMap?.filterKeys { it != currentUserId }?.values?.firstOrNull() ?: "User"
+                        val otherUserId = namesMap?.keys?.firstOrNull { it != currentUserId } ?: ""
+                        val otherUserName = namesMap?.get(otherUserId) ?: "User"
 
                         val lastMsg = doc.getString("lastMessage") ?: ""
                         val unreadCount = doc.getLong("unreadCount")?.toInt() ?: 0
@@ -271,6 +279,7 @@ class InboxActivity : AppCompatActivity() {
 
                         val message = InboxMessage(doc.id.hashCode(), otherUserName, lastMsg, displayTime, unreadCount)
                         message.originalDocId = doc.id
+                        message.otherUserId = otherUserId
                         if (selectedDocIds.contains(doc.id)) {
                             message.isSelected = true
                         }

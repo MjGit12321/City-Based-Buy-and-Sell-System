@@ -86,15 +86,23 @@ class MainpageActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return onComplete()
         
         db.collection("users").document(userId).collection("favorites")
-            .get()
-            .addOnSuccessListener { snapshots ->
+            .addSnapshotListener { snapshots, e ->
+                if (e != null) {
+                    onComplete()
+                    return@addSnapshotListener
+                }
+                
                 favoritesSet.clear()
-                for (doc in snapshots) {
+                snapshots?.forEach { doc ->
                     favoritesSet.add(doc.id)
                 }
-                onComplete()
-            }
-            .addOnFailureListener {
+                
+                // Update existing list's favorite status
+                allProducts.forEach { product ->
+                    product.isFavorite = favoritesSet.contains(product.documentId)
+                }
+                
+                applyFilters()
                 onComplete()
             }
     }

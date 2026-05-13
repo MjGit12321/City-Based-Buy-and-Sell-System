@@ -55,7 +55,7 @@
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_heart_filled"
+            android:src="@android:drawable/btn_star_big_on"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -80,7 +80,7 @@
         <ImageView
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@drawable/ic_heart_outline"
+            android:src="@android:drawable/btn_star_big_off"
             android:contentDescription="@null" />
 
         <TextView
@@ -162,7 +162,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_heart_filled"
+                android:src="@android:drawable/btn_star_big_on"
                 app:tint="#FFFFFF"
                 android:contentDescription="@string/favorites" />
             <TextView

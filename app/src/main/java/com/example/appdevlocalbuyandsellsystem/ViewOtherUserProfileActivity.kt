@@ -11,12 +11,19 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
 // ADD FIREBASE IMPORTS
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ViewOtherUserProfileActivity : AppCompatActivity() {
 
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +51,49 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
         // 2. FETCH REAL DATA
         if (sellerId.isNotEmpty()) {
             fetchSellerProducts(sellerId, rvOtherUserProducts)
+        }
+
+        findViewById<FloatingActionButton>(R.id.fabMessageOtherUser).setOnClickListener {
+            val currentUserId = auth.currentUser?.uid
+            if (currentUserId == null) {
+                Toast.makeText(this, "Please login to message", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (sellerId == currentUserId) {
+                Toast.makeText(this, "You cannot message yourself!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val chatId = if (currentUserId < sellerId) "${currentUserId}_${sellerId}" else "${sellerId}_${currentUserId}"
+
+            db.collection("users").document(currentUserId).get().addOnSuccessListener { snapshot ->
+                val currentUserName = snapshot.getString("fullName") ?: "User"
+
+                val chatData = hashMapOf(
+                    "participants" to listOf(currentUserId, sellerId),
+                    "names" to mapOf(
+                        currentUserId to currentUserName,
+                        sellerId to sellerName
+                    ),
+                    "lastMessage" to "Hello!",
+                    "lastTimestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "lastTime" to SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
+                )
+
+                db.collection("chats").document(chatId)
+                    .set(chatData, SetOptions.merge())
+                    .addOnSuccessListener {
+                        val intent = Intent(this, MessageActivity::class.java)
+                        intent.putExtra("CHAT_ID", chatId)
+                        intent.putExtra("USER_NAME", sellerName)
+                        intent.putExtra("OTHER_USER_ID", sellerId)
+                        startActivity(intent)
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Failed to start chat", Toast.LENGTH_SHORT).show()
+                    }
+            }
         }
 
         // Navigation Bar Logic (Stays the same)
@@ -88,7 +138,7 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.navMe).setOnClickListener {
             startActivity(Intent(this, MeActivity::class.java))
         }
-        findViewById<LinearLayout>(R.id.navNotifications).setOnClickListener {
+        findViewById<LinearLayout>(R.id.navFavorites).setOnClickListener {
             startActivity(Intent(this, FavoritesActivity::class.java))
         }
     }

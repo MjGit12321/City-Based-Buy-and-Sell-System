@@ -100,6 +100,7 @@ class ProductDetailsActivity : AppCompatActivity() {
                         val intent = Intent(this, MessageActivity::class.java)
                         intent.putExtra("CHAT_ID", chatId)
                         intent.putExtra("USER_NAME", sellerName)
+                        intent.putExtra("OTHER_USER_ID", sellerId)
                         startActivity(intent)
                     }
                     .addOnFailureListener {

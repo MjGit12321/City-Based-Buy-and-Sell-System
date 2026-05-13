@@ -28,6 +28,8 @@ class MessageActivity : AppCompatActivity() {
     private lateinit var adapter: ChatAdapter
     private val chatMessages = mutableListOf<ChatMessage>()
     private var chatId: String? = null
+    private var otherUserId: String? = null
+    private var otherUserName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +38,9 @@ class MessageActivity : AppCompatActivity() {
 
         // Retrieve Chat Info from Intent
         chatId = intent.getStringExtra("CHAT_ID")
-        val userName = intent.getStringExtra("USER_NAME") ?: "User"
-        findViewById<TextView>(R.id.tvUserName).text = userName
+        otherUserId = intent.getStringExtra("OTHER_USER_ID")
+        otherUserName = intent.getStringExtra("USER_NAME") ?: "User"
+        findViewById<TextView>(R.id.tvUserName).text = otherUserName
 
         // Adjust for system bars
         val rootLayout = findViewById<android.view.View>(android.R.id.content)
@@ -72,6 +75,52 @@ class MessageActivity : AppCompatActivity() {
 
         // Back Button
         findViewById<ImageView>(R.id.ivBack).setOnClickListener { finish() }
+
+        // Click User in Header -> View Profile
+        val headerProfile = findViewById<ImageView>(R.id.ivHeaderProfile)
+        val tvUserName = findViewById<TextView>(R.id.tvUserName)
+        
+        val goToProfile = {
+            if (!otherUserId.isNullOrEmpty()) {
+                val intent = Intent(this, ViewOtherUserProfileActivity::class.java)
+                intent.putExtra("SELLER_ID", otherUserId)
+                intent.putExtra("SELLER_NAME", otherUserName)
+                startActivity(intent)
+            }
+        }
+        
+        headerProfile.setOnClickListener { goToProfile() }
+        tvUserName.setOnClickListener { goToProfile() }
+
+        // Call Button
+        findViewById<ImageView>(R.id.ivCall).setOnClickListener {
+            val intent = Intent(this, CallingActivity::class.java)
+            intent.putExtra("USER_NAME", otherUserName)
+            startActivity(intent)
+        }
+
+        setupBottomNavigation()
+    }
+
+    private fun setupBottomNavigation() {
+        findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
+            val intent = Intent(this, MainpageActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+        }
+
+        findViewById<LinearLayout>(R.id.navFavorites).setOnClickListener {
+            startActivity(Intent(this, FavoritesActivity::class.java))
+        }
+
+        findViewById<LinearLayout>(R.id.navMe).setOnClickListener {
+            startActivity(Intent(this, MeActivity::class.java))
+        }
+
+        findViewById<LinearLayout>(R.id.navMessages).setOnClickListener {
+            startActivity(Intent(this, InboxActivity::class.java))
+            finish() // Since we're coming from a specific chat, going to Inbox should probably close this
+        }
     }
 
     private fun listenForMessages() {

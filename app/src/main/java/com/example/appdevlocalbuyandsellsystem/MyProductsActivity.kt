@@ -2,7 +2,10 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -26,6 +29,8 @@ class MyProductsActivity : AppCompatActivity() {
     private lateinit var adapter: ProductAdapter
     private lateinit var btnDelete: ImageButton
     private lateinit var tvNoProducts: TextView
+    private lateinit var etSearch: EditText
+    private val allProducts = mutableListOf<Product>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +46,7 @@ class MyProductsActivity : AppCompatActivity() {
 
         btnDelete = findViewById(R.id.btnDeleteProducts)
         tvNoProducts = findViewById(R.id.tvNoProducts)
+        etSearch = findViewById(R.id.etMyProductsSearch)
 
         val rvMyProducts = findViewById<RecyclerView>(R.id.rvMyProducts)
         rvMyProducts.layoutManager = LinearLayoutManager(this)
@@ -48,6 +54,15 @@ class MyProductsActivity : AppCompatActivity() {
         btnDelete.setOnClickListener {
             showDeleteConfirmationDialog()
         }
+
+        // Setup Search Listener
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterMyProducts(s.toString())
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         // 3. REMOVED THE HARDCODED LIST -> FETCH FROM DB
         fetchMyProductsFromFirestore(rvMyProducts)
@@ -91,41 +106,58 @@ class MyProductsActivity : AppCompatActivity() {
             .whereEqualTo("sellerId", currentUserId)
             .get()
             .addOnSuccessListener { documents ->
-                val productList = mutableListOf<Product>()
+                allProducts.clear()
 
                 for (document in documents) {
                     val product = document.toObject(Product::class.java)
                     product.documentId = document.id // Ensure ID is set
-                    productList.add(product)
+                    allProducts.add(product)
                 }
 
-                if (productList.isEmpty()) {
-                    tvNoProducts.visibility = View.VISIBLE
-                    recyclerView.visibility = View.GONE
-                } else {
-                    tvNoProducts.visibility = View.GONE
-                    recyclerView.visibility = View.VISIBLE
-                }
-
-                adapter = ProductAdapter(
-                    productList,
-                    onFavoriteClick = { product ->
-                        // Handle favorite if needed
-                    },
-                    onItemClick = { product ->
-                        val intent = Intent(this, MyProductDetailsActivity::class.java)
-                        intent.putExtra("PRODUCT_DATA", product)
-                        startActivity(intent)
-                    },
-                    onSelectionChanged = { count ->
-                        btnDelete.visibility = if (count > 0) View.VISIBLE else View.GONE
-                    }
-                )
-                recyclerView.adapter = adapter
+                filterMyProducts(etSearch.text.toString())
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun filterMyProducts(query: String) {
+        val filteredList = if (query.isEmpty()) {
+            allProducts
+        } else {
+            allProducts.filter { it.name.contains(query, ignoreCase = true) }
+        }
+
+        val rvMyProducts = findViewById<RecyclerView>(R.id.rvMyProducts)
+        if (filteredList.isEmpty()) {
+            tvNoProducts.visibility = View.VISIBLE
+            rvMyProducts.visibility = View.GONE
+            
+            if (query.isNotEmpty()) {
+                tvNoProducts.text = getString(R.string.no_product_found)
+            } else {
+                tvNoProducts.text = getString(R.string.no_products_uploaded)
+            }
+        } else {
+            tvNoProducts.visibility = View.GONE
+            rvMyProducts.visibility = View.VISIBLE
+        }
+
+        adapter = ProductAdapter(
+            filteredList,
+            onFavoriteClick = { product ->
+                // Handle favorite if needed
+            },
+            onItemClick = { product ->
+                val intent = Intent(this, MyProductDetailsActivity::class.java)
+                intent.putExtra("PRODUCT_DATA", product)
+                startActivity(intent)
+            },
+            onSelectionChanged = { count ->
+                btnDelete.visibility = if (count > 0) View.VISIBLE else View.GONE
+            }
+        )
+        rvMyProducts.adapter = adapter
     }
 
     private fun showDeleteConfirmationDialog() {

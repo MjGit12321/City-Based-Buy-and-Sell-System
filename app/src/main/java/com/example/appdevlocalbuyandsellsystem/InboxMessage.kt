@@ -10,5 +10,6 @@ data class InboxMessage(
     val time: String,
     val unreadCount: Int,
     var originalDocId: String = "",
+    var otherUserId: String = "",
     var isSelected: Boolean = false
 )

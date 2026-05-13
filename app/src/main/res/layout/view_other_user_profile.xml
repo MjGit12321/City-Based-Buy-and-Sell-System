@@ -62,24 +62,7 @@
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toBottomOf="@id/ivOtherUserProfile"
                     app:layout_constraintStart_toStartOf="@id/tvOtherUserName"
-                    app:layout_constraintTop_toBottomOf="@id/tvOtherUserName">
-
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:src="@android:drawable/btn_star_big_on"
-                        app:tint="#FFD700"
-                        android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/other_user_rating"
-                        android:textColor="#FFFFFF"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    app:layout_constraintTop_toBottomOf="@id/tvOtherUserName"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -181,6 +164,19 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMessageOtherUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@android:drawable/stat_notify_chat"
+        app:backgroundTint="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="#1F6F5F"
+        android:contentDescription="Message user" />
+
     <!-- Bottom Navigation Bar -->
     <LinearLayout
         android:id="@+id/bottomNavBar"
@@ -213,7 +209,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/navNotifications"
+            android:id="@+id/navFavorites"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -222,13 +218,13 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@android:drawable/ic_popup_reminder"
+                android:src="@android:drawable/btn_star_big_on"
                 app:tint="#FFFFFF"
-                android:contentDescription="@string/notifications" />
+                android:contentDescription="@string/favorites" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/notifications"
+                android:text="@string/favorites"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp" />
         </LinearLayout>

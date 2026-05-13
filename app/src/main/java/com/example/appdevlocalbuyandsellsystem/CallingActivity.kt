@@ -44,6 +44,10 @@ class CallingActivity : AppCompatActivity() {
         }
 
         tvCallTimer = findViewById(R.id.tvCallTimer)
+        
+        // Get User Name from Intent
+        val userName = intent.getStringExtra("USER_NAME") ?: "User"
+        findViewById<TextView>(R.id.tvCallerName).text = userName
 
         // Setup Button Listeners
         findViewById<ImageButton>(R.id.btnMute).setOnClickListener {

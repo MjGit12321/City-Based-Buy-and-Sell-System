@@ -76,4 +76,8 @@
     <string name="selection_count">%1$d selected</string>
     <string name="block_users">Block users</string>
     <string name="delete_chats">Delete chats</string>
+    <string name="no_messages">No messages yet</string>
+    <string name="no_user_found">No user found with that name</string>
+    <string name="no_product_found">No product found with that name</string>
+    <string name="no_products_uploaded">No products uploaded yet</string>
 </resources>
