@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import android.text.TextWatcher
 
 class MainpageActivity : AppCompatActivity() {
@@ -51,7 +50,7 @@ class MainpageActivity : AppCompatActivity() {
 
         setupHierarchicalFilters()
         
-        // 1. Fetch user's favorite IDs first, then fetch products
+        // 1. Fetch user's favorite IDs first, then fetch ALL products
         fetchUserFavorites {
             fetchProductsFromFirebase()
         }
@@ -60,7 +59,7 @@ class MainpageActivity : AppCompatActivity() {
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                filterProducts(s.toString())
+                applyFilters()
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -100,14 +99,9 @@ class MainpageActivity : AppCompatActivity() {
             }
     }
 
-    private fun fetchProductsFromFirebase(cityFilter: String? = null) {
-        var query: Query = db.collection("products")
-
-        if (!cityFilter.isNullOrEmpty()) {
-            query = query.whereEqualTo("city", cityFilter)
-        }
-
-        query.addSnapshotListener { snapshots, e ->
+    private fun fetchProductsFromFirebase() {
+        // Fetch ALL products so we can filter locally for speed and flexibility
+        db.collection("products").addSnapshotListener { snapshots, e ->
             if (e != null) {
                 Log.e("FirestoreError", "Query failed: ${e.message}")
                 return@addSnapshotListener
@@ -135,16 +129,23 @@ class MainpageActivity : AppCompatActivity() {
                 }
             }
             
-            // Initial render
-            filterProducts(etSearch.text.toString())
+            applyFilters()
         }
     }
 
-    private fun filterProducts(query: String) {
-        val filtered = if (query.isEmpty()) {
-            allProducts
-        } else {
-            allProducts.filter { it.name.contains(query, ignoreCase = true) }
+    private fun applyFilters() {
+        val searchQuery = etSearch.text.toString().lowercase()
+        val selectedProvince = spinnerProvince.selectedItem?.toString() ?: ""
+        val selectedCity = spinnerCity.selectedItem?.toString() ?: ""
+        val selectedBarangay = spinnerBarangay.selectedItem?.toString() ?: ""
+
+        val filtered = allProducts.filter { product ->
+            val matchesSearch = product.name.lowercase().contains(searchQuery)
+            val matchesProvince = selectedProvince.isEmpty() || product.province.equals(selectedProvince, ignoreCase = true)
+            val matchesCity = selectedCity.isEmpty() || product.city.equals(selectedCity, ignoreCase = true)
+            val matchesBarangay = selectedBarangay.isEmpty() || product.baranggay.equals(selectedBarangay, ignoreCase = true)
+
+            matchesSearch && matchesProvince && matchesCity && matchesBarangay
         }
 
         rvProducts.adapter = ProductAdapter(
@@ -184,9 +185,6 @@ class MainpageActivity : AppCompatActivity() {
                     favoritesSet.add(productDocId)
                     Toast.makeText(this, "Added to Favorites", Toast.LENGTH_SHORT).show()
                 }
-                .addOnFailureListener { e ->
-                    Log.e("FavoriteError", "Failed to save: ${e.message}")
-                }
         } else {
             favoriteRef.delete()
                 .addOnSuccessListener {
@@ -197,7 +195,7 @@ class MainpageActivity : AppCompatActivity() {
     }
 
     private fun setupHierarchicalFilters() {
-        val provinces = listOf("", "Bukidnon", "Camiguin", "Misamis Occidental", "Misamis Oriental", "Lanao del Norte")
+        val provinces = listOf("", "Misamis Oriental", "Bukidnon", "Lanao del Norte")
         val provinceAdapter = ArrayAdapter(this, R.layout.spinner_item, provinces)
         provinceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerProvince.adapter = provinceAdapter
@@ -208,8 +206,11 @@ class MainpageActivity : AppCompatActivity() {
                 if (selectedProvince.isNotEmpty()) {
                     updateCityList(selectedProvince)
                 } else {
-                    fetchProductsFromFirebase()
+                    // Reset others
+                    spinnerCity.adapter = ArrayAdapter(this@MainpageActivity, R.layout.spinner_item, listOf(""))
+                    spinnerBarangay.adapter = ArrayAdapter(this@MainpageActivity, R.layout.spinner_item, listOf(""))
                 }
+                applyFilters()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -217,11 +218,9 @@ class MainpageActivity : AppCompatActivity() {
 
     private fun updateCityList(province: String) {
         val cities = when (province) {
-            "Bukidnon" -> listOf("", "Malaybalay City", "Valencia City", "Maramag")
-            "Camiguin" -> listOf("", "Mambajao", "Mahinog", "Guinsiliban")
-            "Misamis Occidental" -> listOf("", "Ozamiz City", "Oroquieta City", "Tangub City")
-            "Misamis Oriental" -> listOf("", "Cagayan de Oro", "Gingoog City", "El Salvador")
-            "Lanao del Norte" -> listOf("", "Iligan City", "Tubod", "Baroy")
+            "Bukidnon" -> listOf("", "Malaybalay City", "Valencia City")
+            "Misamis Oriental" -> listOf("", "Cagayan de Oro", "Gingoog City")
+            "Lanao del Norte" -> listOf("", "Iligan City", "Tubod")
             else -> listOf("")
         }
 
@@ -233,18 +232,32 @@ class MainpageActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedCity = cities[position]
                 if (selectedCity.isNotEmpty()) {
-                    fetchProductsFromFirebase(selectedCity)
                     updateBarangayList(selectedCity)
+                } else {
+                    spinnerBarangay.adapter = ArrayAdapter(this@MainpageActivity, R.layout.spinner_item, listOf(""))
                 }
+                applyFilters()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
     private fun updateBarangayList(city: String) {
-        val barangays = listOf("", "$city Brgy 1", "$city Brgy 2", "$city Brgy 3")
+        val barangays = when (city) {
+            "Cagayan de Oro" -> listOf("", "Nazareth", "Carmen", "Balulang")
+            "Malaybalay City" -> listOf("", "Sumpong", "Casanayan")
+            "Iligan City" -> listOf("", "Pala-o", "Tibanga")
+            else -> listOf("", "Poblacion", "Brgy 1")
+        }
         val barangayAdapter = ArrayAdapter(this, R.layout.spinner_item, barangays)
         barangayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerBarangay.adapter = barangayAdapter
+        
+        spinnerBarangay.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                applyFilters()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
     }
 }
