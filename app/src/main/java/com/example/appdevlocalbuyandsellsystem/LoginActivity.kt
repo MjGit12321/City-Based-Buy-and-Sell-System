@@ -2,6 +2,7 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -10,12 +11,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-// 1. IMPORT FIREBASE
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : AppCompatActivity() {
 
-    // 2. DECLARE AUTH
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,10 +22,9 @@ class LoginActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.login)
 
-        // 3. INITIALIZE AUTH
         auth = FirebaseAuth.getInstance()
 
-        val mainView = findViewById<android.view.View>(android.R.id.content)
+        val mainView = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -43,22 +41,21 @@ class LoginActivity : AppCompatActivity() {
             val password = etPassword.text.toString().trim()
 
             if (email.isNotEmpty() && password.isNotEmpty()) {
-
-                // 4. FIREBASE LOGIN EXECUTION
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this) { task ->
                         if (task.isSuccessful) {
-                            // Success! Navigate to MainpageActivity
+                            // 1. Success Message
+                            Toast.makeText(this, "Successful login", Toast.LENGTH_SHORT).show()
+                            
+                            // 2. Go directly to Main Page (No profile check here)
                             val intent = Intent(this, MainpageActivity::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                             startActivity(intent)
                             finish()
                         } else {
-                            // Failure (e.g. wrong password or no such user)
                             Toast.makeText(this, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                         }
                     }
-
             } else {
                 Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show()
             }

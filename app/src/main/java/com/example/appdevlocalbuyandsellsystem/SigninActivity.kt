@@ -55,8 +55,8 @@ class SigninActivity : AppCompatActivity() {
                                 // Success!
                                 Toast.makeText(this, "Successfully Signed Up!", Toast.LENGTH_SHORT).show()
 
-                                // Redirect to Mainpage
-                                val intent = Intent(this, MainpageActivity::class.java)
+                                // Redirect to Edit Profile
+                                val intent = Intent(this, EditProfileActivity::class.java)
                                 startActivity(intent)
                                 finish() // Prevent going back to Signin screen
                             } else {

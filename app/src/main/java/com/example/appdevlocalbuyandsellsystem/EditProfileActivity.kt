@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import java.util.*
 
 class EditProfileActivity : AppCompatActivity() {
@@ -171,9 +172,18 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun saveUserProfile(data: HashMap<String, String>) {
         val uid = auth.currentUser?.uid ?: return
-        db.collection("users").document(uid).set(data)
+        
+        // Add completion flag
+        data["profileCompleted"] = "true"
+
+        db.collection("users").document(uid).set(data, SetOptions.merge())
             .addOnSuccessListener {
                 Toast.makeText(this, "Profile Updated Successfully!", Toast.LENGTH_SHORT).show()
+                
+                // Go to Mainpage after profile completion
+                val intent = Intent(this, MainpageActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
                 finish()
             }
             .addOnFailureListener { e ->
