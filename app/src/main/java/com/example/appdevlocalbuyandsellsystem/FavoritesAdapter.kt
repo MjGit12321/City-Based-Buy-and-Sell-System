@@ -12,7 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
  */
 class FavoritesAdapter(
     private var favoriteList: MutableList<Product>,
-    private val onRemoveClick: (Int) -> Unit
+    private val onRemoveClick: (Int) -> Unit,
+    private val onItemClick: (Product) -> Unit
 ) : RecyclerView.Adapter<FavoritesAdapter.FavoriteViewHolder>() {
 
     class FavoriteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -20,7 +21,6 @@ class FavoritesAdapter(
         val tvName: TextView = itemView.findViewById(R.id.tvFavoriteName)
         val tvDesc: TextView = itemView.findViewById(R.id.tvFavoriteDesc)
         val tvUsername: TextView = itemView.findViewById(R.id.tvFavoriteUsername)
-        val tvRating: TextView = itemView.findViewById(R.id.tvFavoriteRating)
         val ivHeart: ImageView = itemView.findViewById(R.id.ivFavoriteHeart)
     }
 
@@ -36,10 +36,13 @@ class FavoritesAdapter(
         holder.tvName.text = product.name
         holder.tvDesc.text = product.description
         holder.tvUsername.text = product.sellerName
-        holder.tvRating.text = product.rating.toString()
 
         holder.ivHeart.setOnClickListener {
             onRemoveClick(position)
+        }
+
+        holder.itemView.setOnClickListener {
+            onItemClick(product)
         }
     }
 

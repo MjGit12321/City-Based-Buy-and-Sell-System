@@ -104,9 +104,17 @@ class FavoritesActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = FavoritesAdapter(favoriteList) { position ->
-            removeFavoriteAt(position)
-        }
+        adapter = FavoritesAdapter(
+            favoriteList,
+            onRemoveClick = { position ->
+                removeFavoriteAt(position)
+            },
+            onItemClick = { product ->
+                val intent = Intent(this, ProductDetailsActivity::class.java)
+                intent.putExtra("PRODUCT_DATA", product)
+                startActivity(intent)
+            }
+        )
         rvFavorites.layoutManager = LinearLayoutManager(this)
         rvFavorites.adapter = adapter
     }
