@@ -33,9 +33,9 @@ class MyProductDetailsActivity : AppCompatActivity() {
         // Populate UI with dynamic data
         product?.let {
             findViewById<TextView>(R.id.tvMyProductDetailTitle).text = it.name
-            findViewById<TextView>(R.id.tvMyProductDetailPrice).text = it.price
+            findViewById<TextView>(R.id.tvMyProductDetailPrice).text = "₱${it.price}"
             findViewById<TextView>(R.id.tvMyProductDetailDesc).text = it.description
-            findViewById<TextView>(R.id.tvMySellerName).text = it.username
+            findViewById<TextView>(R.id.tvMySellerName).text = it.sellerName
         }
 
         // Delete Button Logic

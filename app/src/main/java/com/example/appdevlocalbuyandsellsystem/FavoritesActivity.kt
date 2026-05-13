@@ -87,7 +87,7 @@ class FavoritesActivity : AppCompatActivity() {
                             name = doc.getString("name") ?: "Unnamed Product",
                             description = doc.getString("description") ?: "",
                             sellerName = doc.getString("sellerName") ?: "Unknown Seller",
-                            sellerID = doc.getString("sellerID") ?: doc.getString("sellerId") ?: "",
+                            sellerId = doc.getString("sellerID") ?: doc.getString("sellerId") ?: "",
                             city = doc.getString("city") ?: "",
                             location = doc.getString("location") ?: "",
                             documentId = doc.getString("documentId") ?: doc.id,

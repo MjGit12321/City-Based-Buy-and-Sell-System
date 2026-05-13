@@ -111,6 +111,7 @@ class ProductDetailsActivity : AppCompatActivity() {
         findViewById<View>(R.id.sellerSection).setOnClickListener {
             val intent = Intent(this, ViewOtherUserProfileActivity::class.java)
             intent.putExtra("SELLER_ID", product?.getSafeSellerId())
+            intent.putExtra("SELLER_NAME", product?.sellerName)
             startActivity(intent)
         }
 

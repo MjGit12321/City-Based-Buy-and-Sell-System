@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -16,8 +17,21 @@ import androidx.recyclerview.widget.RecyclerView
 class ProductAdapter(
     private val productList: List<Product>,
     private val onFavoriteClick: ((Product) -> Unit)? = null,
+    private val onSelectionChanged: ((Int) -> Unit)? = null,
     private val onItemClick: ((Product) -> Unit)? = null
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+
+    private val selectedItems = mutableSetOf<String>()
+    var isSelectionMode = false
+        set(value) {
+            field = value
+            if (!value) selectedItems.clear()
+            notifyDataSetChanged()
+        }
+
+    fun getSelectedProducts(): List<Product> {
+        return productList.filter { selectedItems.contains(it.documentId) }
+    }
 
     class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvPrice: TextView = itemView.findViewById(R.id.tvProductPrice)
@@ -25,6 +39,7 @@ class ProductAdapter(
         val tvDesc: TextView = itemView.findViewById(R.id.tvProductDesc)
         val tvUsername: TextView = itemView.findViewById(R.id.tvProductSellerName)
         val ivFavorite: ImageView = itemView.findViewById(R.id.ivProductFavorite)
+        val cbSelect: CheckBox = itemView.findViewById(R.id.cbSelectProduct)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
@@ -41,6 +56,20 @@ class ProductAdapter(
         holder.tvName.text = product.name
         holder.tvDesc.text = product.description
         holder.tvUsername.text = product.sellerName
+
+        // Handle selection state
+        holder.cbSelect.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
+        holder.cbSelect.setOnCheckedChangeListener(null) // Prevent recursive calls
+        holder.cbSelect.isChecked = selectedItems.contains(product.documentId)
+
+        holder.cbSelect.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                selectedItems.add(product.documentId)
+            } else {
+                selectedItems.remove(product.documentId)
+            }
+            onSelectionChanged?.invoke(selectedItems.size)
+        }
 
         // Handle Favorite Icon
         if (product.isFavorite) {
@@ -67,14 +96,30 @@ class ProductAdapter(
 
         // Navigate to Details Page
         holder.itemView.setOnClickListener {
-            if (onItemClick != null) {
-                onItemClick.invoke(product)
+            if (isSelectionMode) {
+                holder.cbSelect.isChecked = !holder.cbSelect.isChecked
             } else {
-                // Fallback to default behavior if no custom lambda is provided
-                val context = holder.itemView.context
-                val intent = Intent(context, ProductDetailsActivity::class.java)
-                intent.putExtra("PRODUCT_DATA", product)
-                context.startActivity(intent)
+                if (onItemClick != null) {
+                    onItemClick.invoke(product)
+                } else {
+                    // Fallback to default behavior if no custom lambda is provided
+                    val context = holder.itemView.context
+                    val intent = Intent(context, ProductDetailsActivity::class.java)
+                    intent.putExtra("PRODUCT_DATA", product)
+                    context.startActivity(intent)
+                }
+            }
+        }
+
+        holder.itemView.setOnLongClickListener {
+            if (!isSelectionMode) {
+                isSelectionMode = true
+                selectedItems.add(product.documentId)
+                holder.cbSelect.isChecked = true
+                onSelectionChanged?.invoke(selectedItems.size)
+                true
+            } else {
+                false
             }
         }
     }

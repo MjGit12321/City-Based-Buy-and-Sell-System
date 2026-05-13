@@ -68,7 +68,6 @@ class UploadProductActivity : AppCompatActivity() {
                                 "name" to name,
                                 "price" to price,
                                 "description" to description,
-                                "sellerID" to currentUserId,
                                 "sellerId" to currentUserId,
                                 "sellerName" to sellerName,
                                 "location" to sellerLocation,

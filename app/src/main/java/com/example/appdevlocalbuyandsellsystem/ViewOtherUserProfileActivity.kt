@@ -58,14 +58,18 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
                 val productList = mutableListOf<Product>()
                 for (document in documents) {
                     val product = document.toObject(Product::class.java)
+                    product.documentId = document.id
                     productList.add(product)
                 }
 
-                recyclerView.adapter = ProductAdapter(productList) { product ->
-                    val intent = Intent(this, ProductDetailsActivity::class.java)
-                    intent.putExtra("PRODUCT_DATA", product)
-                    startActivity(intent)
-                }
+                recyclerView.adapter = ProductAdapter(
+                    productList = productList,
+                    onItemClick = { product ->
+                        val intent = Intent(this, ProductDetailsActivity::class.java)
+                        intent.putExtra("PRODUCT_DATA", product)
+                        startActivity(intent)
+                    }
+                )
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

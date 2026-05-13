@@ -46,6 +46,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/myProductsHeader" />
 
+    <ImageButton
+        android:id="@+id/btnDeleteProducts"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Delete selected products"
+        android:src="@android:drawable/ic_menu_delete"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/tvMyProductsTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvMyProductsTitle"
+        app:tint="#FFFFFF" />
+
     <View
         android:id="@+id/titleUnderline"
         android:layout_width="match_parent"
@@ -54,6 +68,20 @@
         android:layout_marginTop="4dp"
         android:background="#80FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/tvMyProductsTitle" />
+
+    <!-- No Products Message -->
+    <TextView
+        android:id="@+id/tvNoProducts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No products uploaded yet"
+        android:textColor="#CCFFFFFF"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleUnderline" />
 
     <!-- Products List -->
     <androidx.recyclerview.widget.RecyclerView
