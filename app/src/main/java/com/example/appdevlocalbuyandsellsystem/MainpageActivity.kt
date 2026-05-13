@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
@@ -26,6 +27,9 @@ class MainpageActivity : AppCompatActivity() {
     private lateinit var rvProducts: RecyclerView
 
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    
+    private var favoritesSet = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +44,11 @@ class MainpageActivity : AppCompatActivity() {
         rvProducts.layoutManager = LinearLayoutManager(this)
 
         setupHierarchicalFilters()
-        fetchProductsFromFirebase()
+        
+        // 1. Fetch user's favorite IDs first, then fetch products
+        fetchUserFavorites {
+            fetchProductsFromFirebase()
+        }
 
         val mainView = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
@@ -60,6 +68,23 @@ class MainpageActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchUserFavorites(onComplete: () -> Unit) {
+        val userId = auth.currentUser?.uid ?: return onComplete()
+        
+        db.collection("users").document(userId).collection("favorites")
+            .get()
+            .addOnSuccessListener { snapshots ->
+                favoritesSet.clear()
+                for (doc in snapshots) {
+                    favoritesSet.add(doc.id)
+                }
+                onComplete()
+            }
+            .addOnFailureListener {
+                onComplete()
+            }
+    }
+
     private fun fetchProductsFromFirebase(cityFilter: String? = null) {
         var query: Query = db.collection("products")
 
@@ -76,7 +101,6 @@ class MainpageActivity : AppCompatActivity() {
             val productList = mutableListOf<Product>()
             snapshots?.forEach { doc ->
                 try {
-                    // Manually map fields to be extremely safe against parsing crashes
                     val product = Product(
                         price = doc.getString("price") ?: "",
                         name = doc.getString("name") ?: "Unnamed Product",
@@ -86,7 +110,9 @@ class MainpageActivity : AppCompatActivity() {
                         baranggay = doc.getString("baranggay") ?: doc.getString("brgy") ?: "",
                         city = doc.getString("city") ?: "",
                         province = doc.getString("province") ?: doc.getString("prov") ?: "",
-                        location = doc.getString("location") ?: ""
+                        location = doc.getString("location") ?: "",
+                        documentId = doc.id,
+                        isFavorite = favoritesSet.contains(doc.id)
                     )
                     productList.add(product)
                 } catch (ex: Exception) {
@@ -94,11 +120,54 @@ class MainpageActivity : AppCompatActivity() {
                 }
             }
 
-            rvProducts.adapter = ProductAdapter(productList) { product ->
-                val intent = Intent(this, ProductDetailsActivity::class.java)
-                intent.putExtra("PRODUCT_DATA", product)
-                startActivity(intent)
-            }
+            rvProducts.adapter = ProductAdapter(
+                productList,
+                onFavoriteClick = { product -> toggleFavorite(product) },
+                onItemClick = { product ->
+                    val intent = Intent(this, ProductDetailsActivity::class.java)
+                    intent.putExtra("PRODUCT_DATA", product)
+                    startActivity(intent)
+                }
+            )
+        }
+    }
+
+    private fun toggleFavorite(product: Product) {
+        val userId = auth.currentUser?.uid ?: return
+        val productDocId = product.documentId
+        
+        if (productDocId.isEmpty()) return
+
+        val favoriteRef = db.collection("users").document(userId).collection("favorites").document(productDocId)
+
+        if (product.isFavorite) {
+            // SAFER: Use a Map instead of the whole object to prevent serialization crashes
+            val favData = hashMapOf(
+                "price" to product.price,
+                "name" to product.name,
+                "description" to product.description,
+                "sellerName" to product.sellerName,
+                "sellerID" to product.getSafeSellerId(),
+                "city" to product.city,
+                "location" to product.location,
+                "documentId" to productDocId,
+                "isFavorite" to true
+            )
+            
+            favoriteRef.set(favData)
+                .addOnSuccessListener {
+                    favoritesSet.add(productDocId)
+                    Toast.makeText(this, "Added to Favorites", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("FavoriteError", "Failed to save: ${e.message}")
+                }
+        } else {
+            favoriteRef.delete()
+                .addOnSuccessListener {
+                    favoritesSet.remove(productDocId)
+                    Toast.makeText(this, "Removed from Favorites", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 

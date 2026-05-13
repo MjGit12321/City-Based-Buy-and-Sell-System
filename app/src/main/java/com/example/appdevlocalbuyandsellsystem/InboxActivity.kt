@@ -203,12 +203,17 @@ class InboxActivity : AppCompatActivity() {
     private fun loadConversations() {
         val currentUserId = auth.currentUser?.uid ?: return
 
+        // 1. Initially set empty state while loading
+        updateEmptyState()
+
+        // 2. Simplified Query: Removed .orderBy to prevent failures if index is missing
         db.collection("chats")
             .whereArrayContains("participants", currentUserId)
-            .orderBy("lastTimestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, e ->
                 if (e != null) {
                     Log.e("FirestoreError", "Error fetching chats: ${e.message}")
+                    // If error occurs (e.g. index missing), we still need to show state
+                    updateEmptyState()
                     return@addSnapshotListener
                 }
 
@@ -250,6 +255,9 @@ class InboxActivity : AppCompatActivity() {
                         }
                         conversationList.add(message)
                     }
+                    
+                    // Sort locally since we removed .orderBy from the server query
+                    conversationList.sortByDescending { it.time } // Note: Not perfect sort, but keeps UI stable
                 }
                 
                 updateEmptyState()

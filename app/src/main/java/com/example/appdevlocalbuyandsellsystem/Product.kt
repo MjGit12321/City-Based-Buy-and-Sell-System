@@ -5,7 +5,7 @@ import java.util.Date
 
 /**
  * Data model for a Product.
- * Uses default values to ensure a no-arg constructor for Firestore.
+ * Simplified for stable Firestore serialization.
  */
 data class Product(
     var price: String = "",
@@ -13,8 +13,8 @@ data class Product(
     var description: String = "",
     var username: String = "",
     var sellerName: String = "",
-    var sellerID: String = "", // Primary ID field
-    var sellerId: String = "", // Fallback ID field for different database casings
+    var sellerID: String = "", 
+    var sellerId: String = "", // Fallback
     var rating: Float = 0.0f,
     var baranggay: String = "",
     var city: String = "",
@@ -22,10 +22,9 @@ data class Product(
     var region: String = "",
     var isFavorite: Boolean = false,
     var timestamp: Date? = null,
-    var location: String = ""
+    var location: String = "",
+    var documentId: String = ""
 ) : Serializable {
-    
-    // Helper to get the correct seller ID regardless of field name in database
     fun getSafeSellerId(): String {
         return if (sellerID.isNotEmpty()) sellerID else sellerId
     }

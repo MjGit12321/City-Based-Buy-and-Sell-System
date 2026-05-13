@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
  */
 class ProductAdapter(
     private val productList: List<Product>,
+    private val onFavoriteClick: ((Product) -> Unit)? = null,
     private val onItemClick: ((Product) -> Unit)? = null
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
@@ -52,7 +53,16 @@ class ProductAdapter(
 
         holder.ivFavorite.setOnClickListener {
             product.isFavorite = !product.isFavorite
-            notifyItemChanged(position)
+            // Update UI immediately for snappiness
+            if (product.isFavorite) {
+                holder.ivFavorite.setImageResource(R.drawable.ic_heart_filled)
+                holder.ivFavorite.setColorFilter(Color.parseColor("#FF0000"))
+            } else {
+                holder.ivFavorite.setImageResource(R.drawable.ic_heart_outline)
+                holder.ivFavorite.setColorFilter(Color.parseColor("#888888"))
+            }
+            // Trigger Firestore update
+            onFavoriteClick?.invoke(product)
         }
 
         // Navigate to Details Page

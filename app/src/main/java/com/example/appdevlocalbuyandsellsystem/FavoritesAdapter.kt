@@ -32,10 +32,10 @@ class FavoritesAdapter(
 
     override fun onBindViewHolder(holder: FavoriteViewHolder, position: Int) {
         val product = favoriteList[position]
-        holder.tvPrice.text = product.price
+        holder.tvPrice.text = "₱${product.price}"
         holder.tvName.text = product.name
         holder.tvDesc.text = product.description
-        holder.tvUsername.text = product.username
+        holder.tvUsername.text = product.sellerName
         holder.tvRating.text = product.rating.toString()
 
         holder.ivHeart.setOnClickListener {
