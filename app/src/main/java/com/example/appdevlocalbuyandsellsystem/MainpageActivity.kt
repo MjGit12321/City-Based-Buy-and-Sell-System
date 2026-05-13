@@ -2,10 +2,12 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import android.text.TextWatcher
 
 class MainpageActivity : AppCompatActivity() {
 
@@ -25,11 +28,13 @@ class MainpageActivity : AppCompatActivity() {
     private lateinit var spinnerCity: Spinner
     private lateinit var spinnerBarangay: Spinner
     private lateinit var rvProducts: RecyclerView
+    private lateinit var etSearch: EditText
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     
     private var favoritesSet = mutableSetOf<String>()
+    private var allProducts = mutableListOf<Product>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +45,7 @@ class MainpageActivity : AppCompatActivity() {
         spinnerCity = findViewById(R.id.spinnerCity)
         spinnerBarangay = findViewById(R.id.spinnerBarangay)
         rvProducts = findViewById(R.id.rvProducts)
+        etSearch = findViewById(R.id.searchBar)
 
         rvProducts.layoutManager = LinearLayoutManager(this)
 
@@ -49,6 +55,15 @@ class MainpageActivity : AppCompatActivity() {
         fetchUserFavorites {
             fetchProductsFromFirebase()
         }
+
+        // 2. Setup Search Listener
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterProducts(s.toString())
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         val mainView = findViewById<View>(android.R.id.content)
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
@@ -98,7 +113,7 @@ class MainpageActivity : AppCompatActivity() {
                 return@addSnapshotListener
             }
 
-            val productList = mutableListOf<Product>()
+            allProducts.clear()
             snapshots?.forEach { doc ->
                 try {
                     val product = Product(
@@ -114,22 +129,33 @@ class MainpageActivity : AppCompatActivity() {
                         documentId = doc.id,
                         isFavorite = favoritesSet.contains(doc.id)
                     )
-                    productList.add(product)
+                    allProducts.add(product)
                 } catch (ex: Exception) {
                     Log.e("ParsingError", "Failed to parse product ${doc.id}: ${ex.message}")
                 }
             }
-
-            rvProducts.adapter = ProductAdapter(
-                productList,
-                onFavoriteClick = { product -> toggleFavorite(product) },
-                onItemClick = { product ->
-                    val intent = Intent(this, ProductDetailsActivity::class.java)
-                    intent.putExtra("PRODUCT_DATA", product)
-                    startActivity(intent)
-                }
-            )
+            
+            // Initial render
+            filterProducts(etSearch.text.toString())
         }
+    }
+
+    private fun filterProducts(query: String) {
+        val filtered = if (query.isEmpty()) {
+            allProducts
+        } else {
+            allProducts.filter { it.name.contains(query, ignoreCase = true) }
+        }
+
+        rvProducts.adapter = ProductAdapter(
+            filtered,
+            onFavoriteClick = { product -> toggleFavorite(product) },
+            onItemClick = { product ->
+                val intent = Intent(this, ProductDetailsActivity::class.java)
+                intent.putExtra("PRODUCT_DATA", product)
+                startActivity(intent)
+            }
+        )
     }
 
     private fun toggleFavorite(product: Product) {
@@ -141,7 +167,6 @@ class MainpageActivity : AppCompatActivity() {
         val favoriteRef = db.collection("users").document(userId).collection("favorites").document(productDocId)
 
         if (product.isFavorite) {
-            // SAFER: Use a Map instead of the whole object to prevent serialization crashes
             val favData = hashMapOf(
                 "price" to product.price,
                 "name" to product.name,

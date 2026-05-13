@@ -21,15 +21,20 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
 import java.util.*
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.EditText
 
 class InboxActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private lateinit var inboxAdapter: InboxAdapter
-    private val conversationList = mutableListOf<InboxMessage>()
+    private val allConversations = mutableListOf<InboxMessage>()
+    private val displayedConversations = mutableListOf<InboxMessage>()
     private lateinit var rvInbox: RecyclerView
     private lateinit var tvNoMessages: TextView
+    private lateinit var etSearch: EditText
     
     // Selection state
     private var isSelectionMode = false
@@ -50,6 +55,7 @@ class InboxActivity : AppCompatActivity() {
         tvNoMessages = findViewById(R.id.tvNoMessages)
         selectionHeader = findViewById(R.id.selectionHeader)
         tvSelectionCount = findViewById(R.id.tvSelectionCount)
+        etSearch = findViewById(R.id.inboxSearchBar)
 
         // Adjust for system bars
         val rootLayout = findViewById<View>(android.R.id.content)
@@ -62,7 +68,7 @@ class InboxActivity : AppCompatActivity() {
         // Setup RecyclerView
         rvInbox.layoutManager = LinearLayoutManager(this)
         inboxAdapter = InboxAdapter(
-            conversationList,
+            displayedConversations,
             onItemClick = { conversation ->
                 if (isSelectionMode) {
                     toggleSelection(conversation)
@@ -83,6 +89,15 @@ class InboxActivity : AppCompatActivity() {
         )
         rvInbox.adapter = inboxAdapter
 
+        // Setup Search Listener
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterConversations(s.toString())
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         // Selection Actions
         findViewById<ImageView>(R.id.ivCancelSelection).setOnClickListener {
             exitSelectionMode()
@@ -100,11 +115,23 @@ class InboxActivity : AppCompatActivity() {
         setupNavigation()
     }
 
+    private fun filterConversations(query: String) {
+        displayedConversations.clear()
+        if (query.isEmpty()) {
+            displayedConversations.addAll(allConversations)
+        } else {
+            displayedConversations.addAll(allConversations.filter { it.name.contains(query, ignoreCase = true) })
+        }
+        
+        updateEmptyState()
+        inboxAdapter.notifyDataSetChanged()
+    }
+
     private fun toggleSelection(conversation: InboxMessage) {
         conversation.isSelected = !conversation.isSelected
         inboxAdapter.notifyDataSetChanged()
         
-        val selectedCount = conversationList.count { it.isSelected }
+        val selectedCount = allConversations.count { it.isSelected }
         if (selectedCount == 0) {
             exitSelectionMode()
         } else {
@@ -115,12 +142,12 @@ class InboxActivity : AppCompatActivity() {
     private fun exitSelectionMode() {
         isSelectionMode = false
         selectionHeader.visibility = View.GONE
-        conversationList.forEach { it.isSelected = false }
+        allConversations.forEach { it.isSelected = false }
         inboxAdapter.notifyDataSetChanged()
     }
 
     private fun showDeleteConfirmation() {
-        val selectedCount = conversationList.count { it.isSelected }
+        val selectedCount = allConversations.count { it.isSelected }
         AlertDialog.Builder(this)
             .setTitle("Delete Conversations")
             .setMessage("Are you sure you want to delete $selectedCount conversation(s)? This will remove them from your list.")
@@ -132,15 +159,13 @@ class InboxActivity : AppCompatActivity() {
     }
 
     private fun deleteSelectedConversations() {
-        val selectedDocs = conversationList.filter { it.isSelected }.map { it.originalDocId }
+        val selectedDocs = allConversations.filter { it.isSelected }.map { it.originalDocId }
         val currentUserId = auth.currentUser?.uid ?: return
 
         // 1. Mark as pending and remove locally for instant UI response
         pendingDeleteIds.addAll(selectedDocs)
-        conversationList.removeAll { it.isSelected }
-        inboxAdapter.notifyDataSetChanged()
-
-        updateEmptyState()
+        allConversations.removeAll { it.isSelected }
+        filterConversations(etSearch.text.toString())
 
         // 2. Perform the actual removal in background
         selectedDocs.forEach { docId ->
@@ -161,7 +186,7 @@ class InboxActivity : AppCompatActivity() {
     }
 
     private fun updateEmptyState() {
-        if (conversationList.isEmpty()) {
+        if (displayedConversations.isEmpty()) {
             tvNoMessages.visibility = View.VISIBLE
             rvInbox.visibility = View.GONE
         } else {
@@ -171,7 +196,7 @@ class InboxActivity : AppCompatActivity() {
     }
 
     private fun showBlockConfirmation() {
-        val selectedCount = conversationList.count { it.isSelected }
+        val selectedCount = allConversations.count { it.isSelected }
         AlertDialog.Builder(this)
             .setTitle("Block Users")
             .setMessage("Blocking these $selectedCount user(s) will prevent them from sending you further messages and hide these chats.")
@@ -183,13 +208,12 @@ class InboxActivity : AppCompatActivity() {
     }
 
     private fun blockSelectedConversations() {
-        val selectedDocs = conversationList.filter { it.isSelected }.map { it.originalDocId }
+        val selectedDocs = allConversations.filter { it.isSelected }.map { it.originalDocId }
         val currentUserId = auth.currentUser?.uid ?: return
 
         pendingDeleteIds.addAll(selectedDocs)
-        conversationList.removeAll { it.isSelected }
-        inboxAdapter.notifyDataSetChanged()
-        updateEmptyState()
+        allConversations.removeAll { it.isSelected }
+        filterConversations(etSearch.text.toString())
 
         selectedDocs.forEach { docId ->
             db.collection("chats").document(docId)
@@ -203,23 +227,20 @@ class InboxActivity : AppCompatActivity() {
     private fun loadConversations() {
         val currentUserId = auth.currentUser?.uid ?: return
 
-        // 1. Initially set empty state while loading
         updateEmptyState()
 
-        // 2. Simplified Query: Removed .orderBy to prevent failures if index is missing
         db.collection("chats")
             .whereArrayContains("participants", currentUserId)
             .addSnapshotListener { snapshots, e ->
                 if (e != null) {
                     Log.e("FirestoreError", "Error fetching chats: ${e.message}")
-                    // If error occurs (e.g. index missing), we still need to show state
                     updateEmptyState()
                     return@addSnapshotListener
                 }
 
-                val selectedDocIds = conversationList.filter { it.isSelected }.map { it.originalDocId }.toSet()
+                val selectedDocIds = allConversations.filter { it.isSelected }.map { it.originalDocId }.toSet()
 
-                conversationList.clear()
+                allConversations.clear()
                 if (snapshots != null && !snapshots.isEmpty) {
                     val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
                     val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
@@ -253,21 +274,13 @@ class InboxActivity : AppCompatActivity() {
                         if (selectedDocIds.contains(doc.id)) {
                             message.isSelected = true
                         }
-                        conversationList.add(message)
+                        allConversations.add(message)
                     }
-                    
-                    // Sort locally since we removed .orderBy from the server query
-                    conversationList.sortByDescending { it.time } // Note: Not perfect sort, but keeps UI stable
+                    allConversations.sortByDescending { it.time }
                 }
                 
-                updateEmptyState()
-                inboxAdapter.notifyDataSetChanged()
-                
-                if (isSelectionMode) {
-                    val count = conversationList.count { it.isSelected }
-                    if (count == 0) exitSelectionMode()
-                    else tvSelectionCount.text = getString(R.string.selection_count, count)
-                }
+                // Re-apply search filter after data load
+                filterConversations(etSearch.text.toString())
             }
     }
 
