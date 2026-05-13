@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import java.text.SimpleDateFormat
+import java.util.*
 
 class InboxActivity : AppCompatActivity() {
 
@@ -73,16 +75,34 @@ class InboxActivity : AppCompatActivity() {
 
                 conversationList.clear()
                 if (snapshots != null && !snapshots.isEmpty) {
+                    val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+                    val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
+                    val calendar = Calendar.getInstance()
+                    val todayYear = calendar.get(Calendar.YEAR)
+                    val todayDayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
+
                     for (doc in snapshots) {
                         // Extract the "other" user's name from the 'names' map
                         val namesMap = doc.get("names") as? Map<String, String>
                         val otherUserName = namesMap?.filterKeys { it != currentUserId }?.values?.firstOrNull() ?: "User"
 
                         val lastMsg = doc.getString("lastMessage") ?: ""
-                        val time = doc.getString("lastTime") ?: ""
                         val unreadCount = doc.getLong("unreadCount")?.toInt() ?: 0
+                        
+                        // Intelligent time formatting
+                        val timestamp = doc.getTimestamp("lastTimestamp")?.toDate()
+                        val displayTime = if (timestamp != null) {
+                            calendar.time = timestamp
+                            if (calendar.get(Calendar.YEAR) == todayYear && calendar.get(Calendar.DAY_OF_YEAR) == todayDayOfYear) {
+                                timeFormat.format(timestamp)
+                            } else {
+                                dateFormat.format(timestamp)
+                            }
+                        } else {
+                            doc.getString("lastTime") ?: ""
+                        }
 
-                        val message = InboxMessage(doc.id.hashCode(), otherUserName, lastMsg, time, unreadCount)
+                        val message = InboxMessage(doc.id.hashCode(), otherUserName, lastMsg, displayTime, unreadCount)
                         message.originalDocId = doc.id
                         conversationList.add(message)
                     }

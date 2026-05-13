@@ -49,8 +49,14 @@ class ChatAdapter(private val chatList: List<ChatMessage>) :
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = chatList[position]
         when (holder) {
-            is SentViewHolder -> holder.tvMessage.text = message.content
-            is ReceivedViewHolder -> holder.tvMessage.text = message.content
+            is SentViewHolder -> {
+                holder.tvMessage.text = message.content
+                holder.tvTime.text = message.time
+            }
+            is ReceivedViewHolder -> {
+                holder.tvMessage.text = message.content
+                holder.tvTime.text = message.time
+            }
             is TimestampViewHolder -> holder.tvTime.text = message.time
         }
     }
@@ -59,10 +65,12 @@ class ChatAdapter(private val chatList: List<ChatMessage>) :
 
     class SentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvMessage: TextView = itemView.findViewById(R.id.tvMessage)
+        val tvTime: TextView = itemView.findViewById(R.id.tvTime)
     }
 
     class ReceivedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvMessage: TextView = itemView.findViewById(R.id.tvMessage)
+        val tvTime: TextView = itemView.findViewById(R.id.tvTime)
     }
 
     class TimestampViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

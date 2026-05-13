@@ -84,12 +84,23 @@ class MessageActivity : AppCompatActivity() {
 
                 if (snapshots != null) {
                     chatMessages.clear()
+                    var lastDateLabel: String? = null
+                    val dateHeaderFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+                    val timeFormatter = SimpleDateFormat("h:mm a", Locale.getDefault())
+
                     for (doc in snapshots) {
                         val text = doc.getString("message") ?: ""
                         val senderId = doc.getString("senderId") ?: ""
-                        val time = doc.getTimestamp("timestamp")?.toDate()?.let {
-                            SimpleDateFormat("h:mm a", Locale.getDefault()).format(it)
-                        } ?: "Now"
+                        val timestamp = doc.getTimestamp("timestamp")?.toDate()
+
+                        val dateLabel = timestamp?.let { dateHeaderFormatter.format(it) } ?: "Today"
+                        val timeLabel = timestamp?.let { timeFormatter.format(it) } ?: "Now"
+
+                        // Add date separator if date changed
+                        if (dateLabel != lastDateLabel) {
+                            chatMessages.add(ChatMessage("", dateLabel, MessageType.TIMESTAMP))
+                            lastDateLabel = dateLabel
+                        }
 
                         val type = if (senderId == auth.currentUser?.uid) {
                             MessageType.SENT
@@ -97,7 +108,7 @@ class MessageActivity : AppCompatActivity() {
                             MessageType.RECEIVED
                         }
 
-                        chatMessages.add(ChatMessage(text, time, type))
+                        chatMessages.add(ChatMessage(text, timeLabel, type))
                     }
                     adapter.notifyDataSetChanged()
                     findViewById<RecyclerView>(R.id.rvChat).scrollToPosition(chatMessages.size - 1)
