@@ -72,4 +72,8 @@
     <string name="my_products_title">My Products</string>
     <string name="search_my_products_hint">Search in my products...</string>
     <string name="delete_product">Delete this product</string>
+    <string name="selection_cancel">Cancel selection</string>
+    <string name="selection_count">%1$d selected</string>
+    <string name="block_users">Block users</string>
+    <string name="delete_chats">Delete chats</string>
 </resources>

@@ -50,6 +50,66 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- Selection Header (Hidden by default) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/selectionHeader"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="#1F6F5F"
+        android:elevation="4dp"
+        android:paddingHorizontal="16dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ivCancelSelection"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FFFFFF"
+            android:contentDescription="@string/selection_cancel" />
+
+        <TextView
+            android:id="@+id/tvSelectionCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/selection_count"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCancelSelection"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivBlock"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="20dp"
+            android:src="@android:drawable/ic_lock_lock"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivDelete"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FFFFFF"
+            android:contentDescription="@string/block_users" />
+
+        <ImageView
+            android:id="@+id/ivDelete"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_delete"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FFFFFF"
+            android:contentDescription="@string/delete_chats" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <!-- Inbox List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvInbox"
@@ -64,7 +124,7 @@
         android:id="@+id/tvNoMessages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No message yet"
+        android:text="No messages yet"
         android:textColor="#888888"
         android:textSize="18sp"
         android:textStyle="bold"
