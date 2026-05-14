@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">App Dev Local Buy and Sell System</string>
+    <string name="app_name">NearBuy</string>
     <string name="login">Login</string>
     <string name="signup">Sign up</string>
     <string name="welcome">Welcome!</string>
