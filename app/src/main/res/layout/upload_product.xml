@@ -54,8 +54,9 @@
 
                 <ImageView
                     android:id="@+id/ivPlaceholder"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerInside"
                     android:src="@android:drawable/ic_menu_gallery"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

@@ -2,22 +2,42 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 
 class EditProfileActivity : AppCompatActivity() {
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
+    private var selectedImageUri: Uri? = null
+    private lateinit var ivProfilePic: ImageView
+
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) {
+            selectedImageUri = uri
+            if (!isFinishing && !isDestroyed) {
+                Glide.with(this)
+                    .load(uri)
+                    .circleCrop()
+                    .into(ivProfilePic)
+            }
+        }
+    }
     private fun setupStaticSpinners(spinnerSex: Spinner) {
         val genders = listOf("Male", "Female")
 
@@ -109,6 +129,8 @@ class EditProfileActivity : AppCompatActivity() {
         val etContact = findViewById<EditText>(R.id.etEditContact)
         val etAltContact = findViewById<EditText>(R.id.etEditAltContact)
         val etHobbies = findViewById<EditText>(R.id.etEditHobbies)
+        ivProfilePic = findViewById(R.id.ivEditProfilePic)
+        val btnChangeImage = findViewById<LinearLayout>(R.id.btnChangeImage)
 
         // Spinners
         val spinnerSex = findViewById<Spinner>(R.id.spinnerSex)
@@ -116,6 +138,10 @@ class EditProfileActivity : AppCompatActivity() {
         val spinnerProvince = findViewById<Spinner>(R.id.spinnerProvince)
         val spinnerCity = findViewById<Spinner>(R.id.spinnerCity)
         val spinnerBaranggay = findViewById<Spinner>(R.id.spinnerBaranggay)
+
+        btnChangeImage.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
 
         setupStaticSpinners(spinnerSex)
         setupAddressHierarchy(spinnerRegion, spinnerProvince, spinnerCity, spinnerBaranggay)
@@ -139,7 +165,7 @@ class EditProfileActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val userData = hashMapOf(
+            val userData = hashMapOf<String, Any>(
                 "fullName" to name,
                 "birthdate" to etBirthdate.text.toString().trim(),
                 "contactNumber" to etContact.text.toString().trim(),
@@ -153,7 +179,31 @@ class EditProfileActivity : AppCompatActivity() {
                 "uid" to (auth.currentUser?.uid ?: "")
             )
 
+            if (selectedImageUri != null) {
+                val localPath = saveImageToInternalStorage(selectedImageUri!!)
+                if (localPath != null) {
+                    userData["profileImageUrl"] = localPath
+                }
+            }
+
             saveUserProfile(userData)
+        }
+    }
+
+    private fun saveImageToInternalStorage(uri: Uri): String? {
+        return try {
+            val timestamp = System.currentTimeMillis()
+            val fileName = "profile_${auth.currentUser?.uid}_$timestamp.jpg"
+            val file = File(filesDir, fileName)
+            contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(file).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            file.absolutePath
+        } catch (e: Exception) {
+            Log.e("LocalSave", "Error: ${e.message}")
+            null
         }
     }
 
@@ -166,11 +216,19 @@ class EditProfileActivity : AppCompatActivity() {
                 etContact.setText(doc.getString("contactNumber"))
                 etAlt.setText(doc.getString("altContactNumber"))
                 etHobbies.setText(doc.getString("hobbies"))
+                
+                val imgUrl = doc.getString("profileImageUrl")
+                if (!imgUrl.isNullOrEmpty() && !isFinishing && !isDestroyed) {
+                    Glide.with(this)
+                        .load(imgUrl)
+                        .circleCrop()
+                        .into(ivProfilePic)
+                }
             }
         }
     }
 
-    private fun saveUserProfile(data: HashMap<String, String>) {
+    private fun saveUserProfile(data: HashMap<String, Any>) {
         val uid = auth.currentUser?.uid ?: return
         
         // Add completion flag

@@ -29,12 +29,10 @@
                     android:id="@+id/ivMeProfileLarge"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:background="@drawable/circle_white_bg"
-                    android:padding="16dp"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/ic_user"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:tint="#1F6F5F"
                     android:contentDescription="@string/profile_picture" />
 
                 <TextView

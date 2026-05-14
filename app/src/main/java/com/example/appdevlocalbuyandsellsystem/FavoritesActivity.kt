@@ -90,6 +90,7 @@ class FavoritesActivity : AppCompatActivity() {
                             sellerId = doc.getString("sellerID") ?: doc.getString("sellerId") ?: "",
                             city = doc.getString("city") ?: "",
                             location = doc.getString("location") ?: "",
+                            imageUrl = doc.getString("imageUrl") ?: "",
                             documentId = doc.getString("documentId") ?: doc.id,
                             isFavorite = true
                         )

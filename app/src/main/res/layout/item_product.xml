@@ -21,12 +21,10 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_marginStart="8dp"
-        android:background="@drawable/circle_outline_bg"
-        android:padding="3dp"
+        android:scaleType="centerCrop"
         android:src="@drawable/ic_user"
         app:layout_constraintStart_toEndOf="@id/cbSelectProduct"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="#888888"
         android:contentDescription="Seller profile" />
 
     <TextView

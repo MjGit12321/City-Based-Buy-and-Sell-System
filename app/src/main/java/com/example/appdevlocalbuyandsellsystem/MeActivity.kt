@@ -2,6 +2,7 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -61,7 +63,7 @@ class MeActivity : AppCompatActivity() {
                 val fullAddress = if (brgy.isNotEmpty()) "$brgy, $city, $prov, $reg" else "Address not set"
 
                 // UI UPDATES
-                findViewById<TextView>(R.id.tvMeNameLarge).text = "\$fullname"
+                findViewById<TextView>(R.id.tvMeNameLarge).text = fullname
                 findViewById<TextView>(R.id.tvMeFullName).text = "Full Name: $fullname"
                 findViewById<TextView>(R.id.tvMeContact).text = "Contact: $contact"
                 findViewById<TextView>(R.id.tvMeAltContact).text = "Alt Contact: $altContact"
@@ -70,8 +72,13 @@ class MeActivity : AppCompatActivity() {
                 // FIXED: Changed ID from tvMeAddress to tvMeHobbies
                 findViewById<TextView>(R.id.tvMeHobbies).text = "Hobbies: $hobbies"
 
-                // Header Update
-                findViewById<TextView>(R.id.tvMeNameLarge).text = fullname
+                val profileImgUrl = snapshot.getString("profileImageUrl")
+                if (!profileImgUrl.isNullOrEmpty() && !isFinishing && !isDestroyed) {
+                    Glide.with(this@MeActivity)
+                        .load(profileImgUrl)
+                        .circleCrop()
+                        .into(findViewById<ImageView>(R.id.ivMeProfileLarge))
+                }
             }
     }
 

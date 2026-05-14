@@ -82,14 +82,12 @@
                     android:id="@+id/ivSellerProfile"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/circle_white_bg"
                     android:contentDescription="@string/seller_profile_desc"
-                    android:padding="2dp"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/ic_user"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="#1F6F5F" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/tvSellerName"

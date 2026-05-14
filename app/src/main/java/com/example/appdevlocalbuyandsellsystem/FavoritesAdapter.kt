@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -22,6 +23,7 @@ class FavoritesAdapter(
         val tvDesc: TextView = itemView.findViewById(R.id.tvFavoriteDesc)
         val tvUsername: TextView = itemView.findViewById(R.id.tvFavoriteUsername)
         val ivHeart: ImageView = itemView.findViewById(R.id.ivFavoriteHeart)
+        val ivFavoriteImage: ImageView = itemView.findViewById(R.id.ivFavoriteImage)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FavoriteViewHolder {
@@ -36,6 +38,18 @@ class FavoritesAdapter(
         holder.tvName.text = product.name
         holder.tvDesc.text = product.description
         holder.tvUsername.text = product.sellerName
+
+        // Load Product Image using Glide
+        if (product.imageUrl.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(product.imageUrl)
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .centerCrop()
+                .into(holder.ivFavoriteImage)
+        } else {
+            holder.ivFavoriteImage.setImageResource(android.R.drawable.ic_menu_gallery)
+        }
 
         holder.ivHeart.setOnClickListener {
             onRemoveClick(position)

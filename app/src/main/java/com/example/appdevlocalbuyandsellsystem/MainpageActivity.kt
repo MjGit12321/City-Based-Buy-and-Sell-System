@@ -128,6 +128,7 @@ class MainpageActivity : AppCompatActivity() {
                         city = doc.getString("city") ?: "",
                         province = doc.getString("province") ?: doc.getString("prov") ?: "",
                         location = doc.getString("location") ?: "",
+                        imageUrl = doc.getString("imageUrl") ?: "",
                         documentId = doc.id,
                         isFavorite = favoritesSet.contains(doc.id)
                     )
@@ -184,6 +185,7 @@ class MainpageActivity : AppCompatActivity() {
                 "sellerId" to product.getSafeSellerId(),
                 "city" to product.city,
                 "location" to product.location,
+                "imageUrl" to product.imageUrl,
                 "documentId" to productDocId,
                 "isFavorite" to true
             )

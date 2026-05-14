@@ -57,15 +57,13 @@
                         android:id="@+id/ivEditProfilePic"
                         android:layout_width="140dp"
                         android:layout_height="140dp"
-                        android:background="@drawable/circle_white_bg"
                         android:contentDescription="@string/profile_picture"
-                        android:padding="8dp"
                         android:src="@drawable/ic_user"
+                        android:scaleType="centerCrop"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:tint="#1F6F5F" />
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <LinearLayout
                         android:id="@+id/btnChangeImage"

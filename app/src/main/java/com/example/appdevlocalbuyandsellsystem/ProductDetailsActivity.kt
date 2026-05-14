@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.ImageView
+import com.bumptech.glide.Glide
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -51,6 +53,28 @@ class ProductDetailsActivity : AppCompatActivity() {
             
             val locationText = if (it.location.isNotBlank()) it.location else "${it.baranggay} ${it.city} ${it.province}"
             findViewById<TextView>(R.id.tvProductLocation).text = "Location: $locationText"
+
+            if (it.imageUrl.isNotEmpty()) {
+                Glide.with(this)
+                    .load(it.imageUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .centerInside()
+                    .into(findViewById<ImageView>(R.id.ivProductDetailImage))
+            }
+
+            // Load Seller Profile Image
+            db.collection("users").document(it.sellerId).get()
+                .addOnSuccessListener { doc ->
+                    val profileImg = doc.getString("profileImageUrl")
+                    if (!profileImg.isNullOrEmpty()) {
+                        Glide.with(this)
+                            .load(profileImg)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_user)
+                            .into(findViewById<ImageView>(R.id.ivSellerProfile))
+                    }
+                }
         }
 
         findViewById<FloatingActionButton>(R.id.fabAddProduct).setOnClickListener {

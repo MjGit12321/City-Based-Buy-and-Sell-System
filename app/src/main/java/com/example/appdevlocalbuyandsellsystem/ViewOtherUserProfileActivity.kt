@@ -2,6 +2,7 @@ package com.example.appdevlocalbuyandsellsystem
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -11,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 // ADD FIREBASE IMPORTS
@@ -50,6 +52,7 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
 
         // 2. FETCH REAL DATA
         if (sellerId.isNotEmpty()) {
+            fetchSellerProfile(sellerId)
             fetchSellerProducts(sellerId, rvOtherUserProducts)
         }
 
@@ -98,6 +101,30 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
 
         // Navigation Bar Logic (Stays the same)
         setupNavigation()
+    }
+
+    private fun fetchSellerProfile(sellerId: String) {
+        db.collection("users").document(sellerId).get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) {
+                    val name = doc.getString("fullName") ?: "User Profile"
+                    findViewById<TextView>(R.id.tvOtherUserName).text = name
+                    
+                    val profileImg = doc.getString("profileImageUrl")
+                    if (!profileImg.isNullOrEmpty()) {
+                        Glide.with(this)
+                            .load(profileImg)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_user)
+                            .into(findViewById<ImageView>(R.id.ivOtherUserProfile))
+                    } else {
+                        val ivProfile = findViewById<ImageView>(R.id.ivOtherUserProfile)
+                        ivProfile.setImageResource(R.drawable.ic_user)
+                        // Ensure tint is applied if no image
+                        ivProfile.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#1F6F5F"))
+                    }
+                }
+            }
     }
 
     private fun fetchSellerProducts(sellerId: String, recyclerView: RecyclerView) {

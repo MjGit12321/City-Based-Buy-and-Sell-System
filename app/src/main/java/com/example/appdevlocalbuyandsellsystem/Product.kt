@@ -22,7 +22,8 @@ data class Product(
     var isFavorite: Boolean = false,
     var timestamp: Date? = null,
     var location: String = "",
-    var documentId: String = ""
+    var documentId: String = "",
+    var imageUrl: String = ""
 ) : Serializable {
     fun getSafeSellerId(): String = sellerId
 }

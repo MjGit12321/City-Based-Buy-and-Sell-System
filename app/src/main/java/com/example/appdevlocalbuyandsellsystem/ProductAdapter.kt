@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FirebaseFirestore
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -39,6 +41,8 @@ class ProductAdapter(
         val tvDesc: TextView = itemView.findViewById(R.id.tvProductDesc)
         val tvUsername: TextView = itemView.findViewById(R.id.tvProductSellerName)
         val ivFavorite: ImageView = itemView.findViewById(R.id.ivProductFavorite)
+        val ivProductImage: ImageView = itemView.findViewById(R.id.ivProductImage)
+        val ivUserIcon: ImageView = itemView.findViewById(R.id.ivProductUserIcon)
         val cbSelect: CheckBox = itemView.findViewById(R.id.cbSelectProduct)
     }
 
@@ -56,6 +60,34 @@ class ProductAdapter(
         holder.tvName.text = product.name
         holder.tvDesc.text = product.description
         holder.tvUsername.text = product.sellerName
+
+        // Load Seller Profile Image
+        FirebaseFirestore.getInstance().collection("users").document(product.sellerId).get()
+            .addOnSuccessListener { doc ->
+                val profileImg = doc.getString("profileImageUrl")
+                if (!profileImg.isNullOrEmpty()) {
+                    Glide.with(holder.itemView.context)
+                        .load(profileImg)
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_user)
+                        .into(holder.ivUserIcon)
+                } else {
+                    holder.ivUserIcon.setImageResource(R.drawable.ic_user)
+                }
+            }
+
+        // Load Product Image using Glide
+        if (product.imageUrl.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(product.imageUrl)
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .centerCrop()
+                .into(holder.ivProductImage)
+        } else {
+            holder.ivProductImage.setImageResource(android.R.drawable.ic_menu_gallery)
+            holder.ivProductImage.setBackgroundColor(Color.parseColor("#CCCCCC"))
+        }
 
         // Handle selection state
         holder.cbSelect.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
