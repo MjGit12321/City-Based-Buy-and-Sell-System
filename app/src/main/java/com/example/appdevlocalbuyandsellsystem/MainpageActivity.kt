@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +29,7 @@ class MainpageActivity : AppCompatActivity() {
     private lateinit var spinnerBarangay: Spinner
     private lateinit var rvProducts: RecyclerView
     private lateinit var etSearch: EditText
+    private lateinit var tvEmpty: TextView
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -45,6 +47,7 @@ class MainpageActivity : AppCompatActivity() {
         spinnerBarangay = findViewById(R.id.spinnerBarangay)
         rvProducts = findViewById(R.id.rvProducts)
         etSearch = findViewById(R.id.searchBar)
+        tvEmpty = findViewById(R.id.tvEmptyMain)
 
         rvProducts.layoutManager = LinearLayoutManager(this)
 
@@ -166,6 +169,8 @@ class MainpageActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         )
+
+        tvEmpty.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
     }
 
     private fun toggleFavorite(product: Product) {

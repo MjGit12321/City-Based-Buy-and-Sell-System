@@ -3,6 +3,7 @@ package com.example.appdevlocalbuyandsellsystem
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -11,6 +12,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FirebaseFirestore
+import java.io.File
 
 class MyProductDetailsActivity : AppCompatActivity() {
 
@@ -36,11 +40,38 @@ class MyProductDetailsActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvMyProductDetailPrice).text = "₱${it.price}"
             findViewById<TextView>(R.id.tvMyProductDetailDesc).text = it.description
             findViewById<TextView>(R.id.tvMySellerName).text = it.sellerName
+
+            // Load Product Image
+            if (it.imageUrl.isNotEmpty()) {
+                val file = if (it.imageUrl.contains("/")) File(it.imageUrl) else File(filesDir, it.imageUrl)
+                Glide.with(this)
+                    .load(file)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .centerInside()
+                    .into(findViewById<ImageView>(R.id.ivMyProductDetailImage))
+            }
+
+            // Load Seller Profile Image
+            FirebaseFirestore.getInstance().collection("users").document(it.sellerId).get()
+                .addOnSuccessListener { doc ->
+                    val profileImg = doc.getString("profileImageUrl")
+                    if (!profileImg.isNullOrEmpty()) {
+                        val file = if (profileImg.contains("/")) File(profileImg) else File(filesDir, profileImg)
+                        Glide.with(this)
+                            .load(file)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_user)
+                            .into(findViewById<ImageView>(R.id.ivMySellerProfile))
+                    }
+                }
         }
 
         // Delete Button Logic
         findViewById<Button>(R.id.btnDeleteProduct).setOnClickListener {
-            showDeleteConfirmation()
+            product?.documentId?.let { id ->
+                showDeleteConfirmation(id)
+            } ?: Toast.makeText(this, "Cannot delete: ID missing", Toast.LENGTH_SHORT).show()
         }
 
         // Footer Navigation Logic (Home highlighted)
@@ -63,14 +94,24 @@ class MyProductDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDeleteConfirmation() {
+    private fun showDeleteConfirmation(productId: String) {
         AlertDialog.Builder(this)
             .setTitle("Delete Product")
             .setMessage("Are you sure you want to delete this product? This action cannot be undone.")
             .setPositiveButton("Delete") { _, _ ->
-                // In a real app, logic to delete from database would go here
-                Toast.makeText(this, "Product deleted successfully", Toast.LENGTH_SHORT).show()
-                finish()
+                if (productId.isNotEmpty()) {
+                    FirebaseFirestore.getInstance().collection("products").document(productId)
+                        .delete()
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Product deleted successfully", Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Delete failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    Toast.makeText(this, "Error: Product ID missing", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()

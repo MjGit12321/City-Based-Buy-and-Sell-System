@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import java.io.File
 // ADD FIREBASE IMPORTS
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -112,8 +113,9 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
                     
                     val profileImg = doc.getString("profileImageUrl")
                     if (!profileImg.isNullOrEmpty()) {
+                        val file = if (profileImg.contains("/")) File(profileImg) else File(filesDir, profileImg)
                         Glide.with(this)
-                            .load(profileImg)
+                            .load(file)
                             .circleCrop()
                             .placeholder(R.drawable.ic_user)
                             .into(findViewById<ImageView>(R.id.ivOtherUserProfile))

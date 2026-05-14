@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.io.File
 
 class MeActivity : AppCompatActivity() {
 
@@ -74,8 +75,9 @@ class MeActivity : AppCompatActivity() {
 
                 val profileImgUrl = snapshot.getString("profileImageUrl")
                 if (!profileImgUrl.isNullOrEmpty() && !isFinishing && !isDestroyed) {
+                    val file = if (profileImgUrl.contains("/")) File(profileImgUrl) else File(filesDir, profileImgUrl)
                     Glide.with(this@MeActivity)
-                        .load(profileImgUrl)
+                        .load(file)
                         .circleCrop()
                         .into(findViewById<ImageView>(R.id.ivMeProfileLarge))
                 }

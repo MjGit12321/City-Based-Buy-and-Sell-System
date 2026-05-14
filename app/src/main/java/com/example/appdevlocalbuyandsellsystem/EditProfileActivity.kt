@@ -165,17 +165,23 @@ class EditProfileActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val sex = spinnerSex.selectedItem?.toString() ?: ""
+            val region = spinnerRegion.selectedItem?.toString() ?: ""
+            val province = spinnerProvince.selectedItem?.toString() ?: ""
+            val city = spinnerCity.selectedItem?.toString() ?: ""
+            val barangay = spinnerBaranggay.selectedItem?.toString() ?: ""
+
             val userData = hashMapOf<String, Any>(
                 "fullName" to name,
                 "birthdate" to etBirthdate.text.toString().trim(),
                 "contactNumber" to etContact.text.toString().trim(),
                 "altContactNumber" to etAltContact.text.toString().trim(),
                 "hobbies" to etHobbies.text.toString().trim(),
-                "sex" to spinnerSex.selectedItem.toString(),
-                "region" to spinnerRegion.selectedItem.toString(),
-                "province" to spinnerProvince.selectedItem.toString(),
-                "city" to spinnerCity.selectedItem.toString(),
-                "barangay" to spinnerBaranggay.selectedItem.toString(),
+                "sex" to sex,
+                "region" to region,
+                "province" to province,
+                "city" to city,
+                "barangay" to barangay,
                 "uid" to (auth.currentUser?.uid ?: "")
             )
 
@@ -192,15 +198,16 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun saveImageToInternalStorage(uri: Uri): String? {
         return try {
-            val timestamp = System.currentTimeMillis()
-            val fileName = "profile_${auth.currentUser?.uid}_$timestamp.jpg"
+            val fileName = "profile_${auth.currentUser?.uid}.jpg"
             val file = File(filesDir, fileName)
             contentResolver.openInputStream(uri)?.use { input ->
                 FileOutputStream(file).use { output ->
                     input.copyTo(output)
                 }
             }
-            file.absolutePath
+            // Instead of absolute path, we save the filename
+            // This ensures other accounts on the same device can find it in their own filesDir
+            fileName
         } catch (e: Exception) {
             Log.e("LocalSave", "Error: ${e.message}")
             null
@@ -219,8 +226,9 @@ class EditProfileActivity : AppCompatActivity() {
                 
                 val imgUrl = doc.getString("profileImageUrl")
                 if (!imgUrl.isNullOrEmpty() && !isFinishing && !isDestroyed) {
+                    val file = if (imgUrl.contains("/")) File(imgUrl) else File(filesDir, imgUrl)
                     Glide.with(this)
-                        .load(imgUrl)
+                        .load(file)
                         .circleCrop()
                         .into(ivProfilePic)
                 }

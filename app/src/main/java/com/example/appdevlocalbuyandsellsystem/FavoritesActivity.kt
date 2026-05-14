@@ -43,6 +43,7 @@ class FavoritesActivity : AppCompatActivity() {
         emptyState = findViewById(R.id.emptyState)
 
         setupRecyclerView()
+        checkEmptyState() // Ensure initial state is set
         loadFavoritesFromFirestore()
 
         // FAB logic
@@ -75,6 +76,7 @@ class FavoritesActivity : AppCompatActivity() {
             .addSnapshotListener { snapshots, e ->
                 if (e != null) {
                     Log.e("FirestoreError", "Error fetching favorites: ${e.message}")
+                    checkEmptyState()
                     return@addSnapshotListener
                 }
 

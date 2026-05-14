@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.google.firebase.firestore.FirebaseFirestore
+import java.io.File
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -66,8 +67,10 @@ class ProductAdapter(
             .addOnSuccessListener { doc ->
                 val profileImg = doc.getString("profileImageUrl")
                 if (!profileImg.isNullOrEmpty()) {
-                    Glide.with(holder.itemView.context)
-                        .load(profileImg)
+                    val context = holder.itemView.context
+                    val file = if (profileImg.contains("/")) File(profileImg) else File(context.filesDir, profileImg)
+                    Glide.with(context)
+                        .load(file)
                         .circleCrop()
                         .placeholder(R.drawable.ic_user)
                         .into(holder.ivUserIcon)
@@ -78,8 +81,10 @@ class ProductAdapter(
 
         // Load Product Image using Glide
         if (product.imageUrl.isNotEmpty()) {
-            Glide.with(holder.itemView.context)
-                .load(product.imageUrl)
+            val context = holder.itemView.context
+            val file = if (product.imageUrl.contains("/")) File(product.imageUrl) else File(context.filesDir, product.imageUrl)
+            Glide.with(context)
+                .load(file)
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .error(android.R.drawable.ic_menu_report_image)
                 .centerCrop()

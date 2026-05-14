@@ -126,7 +126,8 @@ class UploadProductActivity : AppCompatActivity() {
                     input.copyTo(output)
                 }
             }
-            file.absolutePath
+            // Fix: Store only the filename so other users on the same device can find it
+            fileName
         } catch (e: Exception) {
             Log.e("LocalSave", "Error: ${e.message}")
             null

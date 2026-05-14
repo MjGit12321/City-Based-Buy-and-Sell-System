@@ -17,6 +17,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -55,8 +56,9 @@ class ProductDetailsActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.tvProductLocation).text = "Location: $locationText"
 
             if (it.imageUrl.isNotEmpty()) {
+                val file = if (it.imageUrl.contains("/")) File(it.imageUrl) else File(filesDir, it.imageUrl)
                 Glide.with(this)
-                    .load(it.imageUrl)
+                    .load(file)
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .error(android.R.drawable.ic_menu_report_image)
                     .centerInside()
@@ -68,8 +70,9 @@ class ProductDetailsActivity : AppCompatActivity() {
                 .addOnSuccessListener { doc ->
                     val profileImg = doc.getString("profileImageUrl")
                     if (!profileImg.isNullOrEmpty()) {
+                        val file = if (profileImg.contains("/")) File(profileImg) else File(filesDir, profileImg)
                         Glide.with(this)
-                            .load(profileImg)
+                            .load(file)
                             .circleCrop()
                             .placeholder(R.drawable.ic_user)
                             .into(findViewById<ImageView>(R.id.ivSellerProfile))
