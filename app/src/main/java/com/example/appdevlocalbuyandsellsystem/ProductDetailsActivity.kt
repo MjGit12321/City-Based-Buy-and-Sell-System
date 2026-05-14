@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.ImageView
@@ -113,10 +114,10 @@ class ProductDetailsActivity : AppCompatActivity() {
                 val chatData = hashMapOf(
                     "participants" to listOf(currentUserId, sellerId),
                     "names" to mapOf(
-                        currentUserId to currentUserName,
-                        sellerId to sellerName
+                        currentUserId.toString() to currentUserName,
+                        sellerId.toString() to sellerName
                     ),
-                    "lastMessage" to "Interested in ${product.name}",
+                    "lastMessage" to "Interested in ${product?.name ?: "this item"}",
                     "lastTimestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
                     "lastTime" to SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
                 )
@@ -130,8 +131,9 @@ class ProductDetailsActivity : AppCompatActivity() {
                         intent.putExtra("OTHER_USER_ID", sellerId)
                         startActivity(intent)
                     }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Failed to start chat", Toast.LENGTH_SHORT).show()
+                    .addOnFailureListener { e ->
+                        Log.e("ChatError", "Failed to start chat: ${e.message}")
+                        Toast.makeText(this, "Failed to start chat: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             }
         }

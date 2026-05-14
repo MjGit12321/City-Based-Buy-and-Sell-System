@@ -174,10 +174,17 @@ class MainpageActivity : AppCompatActivity() {
     }
 
     private fun toggleFavorite(product: Product) {
-        val userId = auth.currentUser?.uid ?: return
-        val productDocId = product.documentId
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(this, "Please login to favorite items", Toast.LENGTH_SHORT).show()
+            return
+        }
         
-        if (productDocId.isEmpty()) return
+        val productDocId = product.documentId
+        if (productDocId.isEmpty()) {
+            Log.e("FavoriteError", "Product document ID is empty")
+            return
+        }
 
         val favoriteRef = db.collection("users").document(userId).collection("favorites").document(productDocId)
 
@@ -189,6 +196,8 @@ class MainpageActivity : AppCompatActivity() {
                 "sellerName" to product.sellerName,
                 "sellerId" to product.getSafeSellerId(),
                 "city" to product.city,
+                "baranggay" to product.baranggay,
+                "province" to product.province,
                 "location" to product.location,
                 "imageUrl" to product.imageUrl,
                 "documentId" to productDocId,
@@ -200,11 +209,19 @@ class MainpageActivity : AppCompatActivity() {
                     favoritesSet.add(productDocId)
                     Toast.makeText(this, "Added to Favorites", Toast.LENGTH_SHORT).show()
                 }
+                .addOnFailureListener { e ->
+                    Log.e("FavoriteError", "Failed to add favorite: ${e.message}")
+                    Toast.makeText(this, "Failed to add favorite", Toast.LENGTH_SHORT).show()
+                }
         } else {
             favoriteRef.delete()
                 .addOnSuccessListener {
                     favoritesSet.remove(productDocId)
                     Toast.makeText(this, "Removed from Favorites", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("FavoriteError", "Failed to remove favorite: ${e.message}")
+                    Toast.makeText(this, "Failed to remove favorite", Toast.LENGTH_SHORT).show()
                 }
         }
     }
