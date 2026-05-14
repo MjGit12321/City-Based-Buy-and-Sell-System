@@ -230,6 +230,7 @@ class EditProfileActivity : AppCompatActivity() {
                     Glide.with(this)
                         .load(file)
                         .circleCrop()
+                        .placeholder(R.drawable.ic_user)
                         .into(ivProfilePic)
                 }
             }

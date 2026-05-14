@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import com.bumptech.glide.Glide
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -20,6 +21,7 @@ import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
 import java.util.*
 import com.google.firebase.firestore.FieldValue
+import java.io.File
 
 class MessageActivity : AppCompatActivity() {
 
@@ -41,6 +43,22 @@ class MessageActivity : AppCompatActivity() {
         otherUserId = intent.getStringExtra("OTHER_USER_ID")
         otherUserName = intent.getStringExtra("USER_NAME") ?: "User"
         findViewById<TextView>(R.id.tvUserName).text = otherUserName
+
+        // Load Header Profile Image
+        if (!otherUserId.isNullOrEmpty()) {
+            db.collection("users").document(otherUserId!!).get()
+                .addOnSuccessListener { doc ->
+                    val profileImg = doc.getString("profileImageUrl")
+                    if (!profileImg.isNullOrEmpty()) {
+                        val file = if (profileImg.contains("/")) File(profileImg) else File(filesDir, profileImg)
+                        Glide.with(this)
+                            .load(file)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_user)
+                            .into(findViewById<ImageView>(R.id.ivHeaderProfile))
+                    }
+                }
+        }
 
         // Adjust for system bars
         val rootLayout = findViewById<android.view.View>(android.R.id.content)
@@ -96,6 +114,7 @@ class MessageActivity : AppCompatActivity() {
         findViewById<ImageView>(R.id.ivCall).setOnClickListener {
             val intent = Intent(this, CallingActivity::class.java)
             intent.putExtra("USER_NAME", otherUserName)
+            intent.putExtra("OTHER_USER_ID", otherUserId)
             startActivity(intent)
         }
 

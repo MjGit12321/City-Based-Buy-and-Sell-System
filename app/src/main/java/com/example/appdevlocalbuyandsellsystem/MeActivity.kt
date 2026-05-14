@@ -79,6 +79,7 @@ class MeActivity : AppCompatActivity() {
                     Glide.with(this@MeActivity)
                         .load(file)
                         .circleCrop()
+                        .placeholder(R.drawable.ic_user)
                         .into(findViewById<ImageView>(R.id.ivMeProfileLarge))
                 }
             }

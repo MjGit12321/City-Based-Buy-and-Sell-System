@@ -37,7 +37,6 @@
             android:background="@drawable/circle_white_bg"
             android:padding="8dp"
             android:src="@drawable/ic_user"
-            app:tint="#1F6F5F"
             android:contentDescription="@null" />
 
         <TextView

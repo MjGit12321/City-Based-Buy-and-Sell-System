@@ -4,14 +4,16 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-
-
+import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FirebaseFirestore
+import java.io.File
 
 
 class CallingActivity : AppCompatActivity() {
@@ -45,9 +47,27 @@ class CallingActivity : AppCompatActivity() {
 
         tvCallTimer = findViewById(R.id.tvCallTimer)
         
-        // Get User Name from Intent
+        // Get User Info from Intent
         val userName = intent.getStringExtra("USER_NAME") ?: "User"
+        val otherUserId = intent.getStringExtra("OTHER_USER_ID")
+        
         findViewById<TextView>(R.id.tvCallerName).text = userName
+
+        // Load Caller Profile Image
+        if (!otherUserId.isNullOrEmpty()) {
+            FirebaseFirestore.getInstance().collection("users").document(otherUserId).get()
+                .addOnSuccessListener { doc ->
+                    val profileImg = doc.getString("profileImageUrl")
+                    if (!profileImg.isNullOrEmpty()) {
+                        val file = if (profileImg.contains("/")) File(profileImg) else File(filesDir, profileImg)
+                        Glide.with(this)
+                            .load(file)
+                            .circleCrop()
+                            .placeholder(R.drawable.ic_user)
+                            .into(findViewById<ImageView>(R.id.ivCallerProfile))
+                    }
+                }
+        }
 
         // Setup Button Listeners
         findViewById<ImageButton>(R.id.btnMute).setOnClickListener {

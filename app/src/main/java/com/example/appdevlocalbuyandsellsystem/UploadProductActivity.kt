@@ -9,8 +9,6 @@ import android.widget.Toast
 import android.net.Uri
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
-import com.google.firebase.storage.FirebaseStorage
-import java.util.UUID
 import java.io.File
 import java.io.FileOutputStream
 import androidx.activity.enableEdgeToEdge

@@ -26,6 +26,7 @@ class FavoritesAdapter(
         val tvUsername: TextView = itemView.findViewById(R.id.tvFavoriteUsername)
         val ivHeart: ImageView = itemView.findViewById(R.id.ivFavoriteHeart)
         val ivFavoriteImage: ImageView = itemView.findViewById(R.id.ivFavoriteImage)
+        val ivUserIcon: ImageView = itemView.findViewById(R.id.ivFavoriteUserIcon)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FavoriteViewHolder {
@@ -52,9 +53,9 @@ class FavoritesAdapter(
                         .load(file)
                         .circleCrop()
                         .placeholder(R.drawable.ic_user)
-                        .into(holder.itemView.findViewById<ImageView>(R.id.ivFavoriteUserIcon))
+                        .into(holder.ivUserIcon)
                 } else {
-                    holder.itemView.findViewById<ImageView>(R.id.ivFavoriteUserIcon).setImageResource(R.drawable.ic_user)
+                    holder.ivUserIcon.setImageResource(R.drawable.ic_user)
                 }
             }
 
