@@ -21,7 +21,8 @@ class ProductAdapter(
     private val productList: List<Product>,
     private val onFavoriteClick: ((Product) -> Unit)? = null,
     private val onSelectionChanged: ((Int) -> Unit)? = null,
-    private val onItemClick: ((Product) -> Unit)? = null
+    private val onItemClick: ((Product) -> Unit)? = null,
+    private val canSelect: Boolean = true
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     private val selectedItems = mutableSetOf<String>()
@@ -149,7 +150,7 @@ class ProductAdapter(
         }
 
         holder.itemView.setOnLongClickListener {
-            if (!isSelectionMode) {
+            if (canSelect && !isSelectionMode) {
                 isSelectionMode = true
                 selectedItems.add(product.documentId)
                 holder.cbSelect.isChecked = true

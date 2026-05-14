@@ -46,13 +46,6 @@ class FavoritesActivity : AppCompatActivity() {
         checkEmptyState() // Ensure initial state is set
         loadFavoritesFromFirestore()
 
-        // FAB logic
-        findViewById<FloatingActionButton>(R.id.fabAdd2).setOnClickListener {
-            val intent = Intent(this, MainpageActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            startActivity(intent)
-        }
-
         // Navigation logic
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainpageActivity::class.java)

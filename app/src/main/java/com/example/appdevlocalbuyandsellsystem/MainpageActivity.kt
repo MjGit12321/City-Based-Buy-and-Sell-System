@@ -167,7 +167,8 @@ class MainpageActivity : AppCompatActivity() {
                 val intent = Intent(this, ProductDetailsActivity::class.java)
                 intent.putExtra("PRODUCT_DATA", product)
                 startActivity(intent)
-            }
+            },
+            canSelect = false
         )
 
         tvEmpty.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE

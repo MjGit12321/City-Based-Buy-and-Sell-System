@@ -157,20 +157,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- FAB Add -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
-        android:backgroundTint="#2E9381"
-        android:contentDescription="Add Product"
-        android:src="@android:drawable/ic_input_add"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavBar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="#FFFFFF" />
-
     <!-- Bottom Navigation Bar -->
     <LinearLayout
         android:id="@+id/bottomNavBar"

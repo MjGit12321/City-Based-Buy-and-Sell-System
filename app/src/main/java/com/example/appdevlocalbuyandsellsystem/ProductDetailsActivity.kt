@@ -81,10 +81,6 @@ class ProductDetailsActivity : AppCompatActivity() {
                 }
         }
 
-        findViewById<FloatingActionButton>(R.id.fabAddProduct).setOnClickListener {
-            Toast.makeText(this, "Product added to wishlist!", Toast.LENGTH_SHORT).show()
-        }
-
         // Messaging Logic
         findViewById<FloatingActionButton>(R.id.fabMessageSeller).setOnClickListener {
             val currentUserId = auth.currentUser?.uid

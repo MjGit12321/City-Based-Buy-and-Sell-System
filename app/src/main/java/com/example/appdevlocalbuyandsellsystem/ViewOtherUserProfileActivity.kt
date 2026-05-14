@@ -147,7 +147,8 @@ class ViewOtherUserProfileActivity : AppCompatActivity() {
                         val intent = Intent(this, ProductDetailsActivity::class.java)
                         intent.putExtra("PRODUCT_DATA", product)
                         startActivity(intent)
-                    }
+                    },
+                    canSelect = false
                 )
             }
             .addOnFailureListener { e ->
